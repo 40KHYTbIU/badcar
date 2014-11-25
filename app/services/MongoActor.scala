@@ -19,13 +19,13 @@ class MongoActor extends Actor with ActorLogging {
     val connection: MongoConnection = driver.connection(uri)
     connection(uri.db.get)
   }
-  val badCars = db[JSONCollection]("badcars")
+  def collection: JSONCollection = db.collection[JSONCollection]("badcars")
 
   override def receive: Receive = {
     //Запрос списка форумов для поиска
     case cars: List[BadCar] => {
       logger.debug("Got cars list for insert")
-      cars.foreach(badCars.insert(_))
+      cars.foreach(collection.insert(_))
     }
 
     case "Shutdown" =>

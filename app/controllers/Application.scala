@@ -17,6 +17,14 @@ import play.modules.reactivemongo.MongoController
 import play.modules.reactivemongo.json.collection.JSONCollection
 
 object Application extends Controller with MongoController {
+
+  override val db = {
+    val driver = new MongoDriver
+    val uri = MongoConnection.parseURI(System.getenv("MONGOHQ_URL")).get
+    val connection: MongoConnection = driver.connection(uri)
+    connection(uri.db.get)
+  }
+
   def collection: JSONCollection = db.collection[JSONCollection]("badcars")
 
   val httpActor = Akka.system.actorOf(Props[HttpActor], name = "httpActorUpdate")
