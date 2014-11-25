@@ -5,7 +5,10 @@ import play.api.mvc._
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import play.api.libs.json._
 import scala.concurrent.Future
-
+import play.libs.Akka
+import akka.actor.Props
+import services.HttpActor
+import models._
 // Reactive Mongo imports
 import reactivemongo.api._
 
@@ -16,25 +19,14 @@ import play.modules.reactivemongo.json.collection.JSONCollection
 object Application extends Controller with MongoController {
   def collection: JSONCollection = db.collection[JSONCollection]("badcars")
 
-  def index = Action {
-    Ok(views.html.index("Your new application is ready."))
-  }
-  import play.api.data.Form
-  import models._
-  import models.JsonFormats._
+  val httpActor = Akka.system.actorOf(Props[HttpActor], name = "httpActorUpdate")
 
-  def add = Action.async {
-    val badCar = BadCar(45072, true, "А 799 ХТ 08", "05.11.2014 19:27", "ул. Орджоникидзе, 21",
-      Mark(72, "Toyota"),
-      Option(Evacuator(14, "А 192 КК 123")),
-      Option(Organization(4, "ООО \"СВП\"")),
-      Parking(4, "ул. Тургенева, 1/5"))
-
-    collection.insert(badCar).map(lastError =>
-      Ok("Mongo LastError: %s".format(lastError)))
+  def update = Action.async {
+    httpActor ! "get"
+    Future(Ok("Updated"))
   }
 
-  def getAllCars = Action.async {
+  def index = Action.async {
     // let's do our query
     val cursor: Cursor[BadCar] = collection.
       // find all people with name `name`
@@ -47,7 +39,11 @@ object Application extends Controller with MongoController {
 
     // everything's ok! Let's reply with the array
     futureUsersList.map { car =>
-      Ok(car.toString)
+      Ok(views.html.cars(car))
+    }.recover {
+      case e =>
+        e.printStackTrace()
+        BadRequest(e.getMessage())
     }
   }
 }
