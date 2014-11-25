@@ -13,12 +13,11 @@ import models._
 import reactivemongo.api._
 
 // Reactive Mongo plugin, including the JSON-specialized collection
-import play.modules.reactivemongo.MongoController
 import play.modules.reactivemongo.json.collection.JSONCollection
 
-object Application extends Controller with MongoController {
+object Application extends Controller {
 
-  override val db = {
+  def db = {
     val driver = new MongoDriver
     val uri = MongoConnection.parseURI(System.getenv("MONGOHQ_URL")).get
     val connection: MongoConnection = driver.connection(uri)

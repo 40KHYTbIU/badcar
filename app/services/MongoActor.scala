@@ -13,7 +13,7 @@ class MongoActor extends Actor with ActorLogging {
   val logger = LoggerFactory.getLogger(this.getClass)
   val conf = ConfigFactory.load()
 
-  val db = {
+  def db = {
     val driver = new MongoDriver
     val uri = MongoConnection.parseURI(System.getenv("MONGOHQ_URL")).get
     val connection: MongoConnection = driver.connection(uri)
