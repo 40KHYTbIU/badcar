@@ -23,7 +23,7 @@ class MongoActor extends Actor with ActorLogging {
 
   override def receive: Receive = {
     //Запрос списка форумов для поиска
-    case cars: List[BadCar] => {
+    case cars: Array[BadCar] => {
       logger.debug("Got cars list for insert")
       cars.foreach(collection.insert(_))
     }
