@@ -1,9 +1,11 @@
 package controllers
 
+import com.typesafe.config.ConfigFactory
 import play.api._
 import play.api.mvc._
-import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import play.api.libs.json._
+import play.api.libs.concurrent.Execution.Implicits.defaultContext
+import play.modules.reactivemongo.{ MongoController, ReactiveMongoPlugin }
 import scala.concurrent.Future
 import play.libs.Akka
 import akka.actor.Props
@@ -15,16 +17,9 @@ import reactivemongo.api._
 // Reactive Mongo plugin, including the JSON-specialized collection
 import play.modules.reactivemongo.json.collection.JSONCollection
 
-object Application extends Controller {
+object Application extends Controller with MongoController {
 
-  def db = {
-    val driver = new MongoDriver
-    val uri = MongoConnection.parseURI(System.getenv("MONGOHQ_URL")).get
-    val connection: MongoConnection = driver.connection(uri)
-    connection(uri.db.get)
-  }
-
-  def collection: JSONCollection = db.collection[JSONCollection]("badcars")
+  val collection: JSONCollection = db.collection[JSONCollection]("badcars")
 
   val httpActor = Akka.system.actorOf(Props[HttpActor], name = "httpActorUpdate")
 
