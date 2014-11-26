@@ -63,9 +63,7 @@ class HttpActor extends Actor with ActorLogging {
       val pageCount = (result \ "page_count").as[Int]
       logger.debug("Page count is: " + pageCount)
       //повторять для всех страниц
-      val badCars = (pageCount to 1 by -1).map(x=>(pageToJson(x) \ "items").as[Seq[BadCar]]).flatten.toArray
-      mongoActor ! badCars
-      logger.debug("Result is: " + badCars)
+     (pageCount to 1 by -1).foreach(x=> mongoActor ! (pageToJson(x) \ "items").as[Seq[BadCar]])
     }
     case "Shutdown" =>
       logger.debug("Http actor shutdowns")
