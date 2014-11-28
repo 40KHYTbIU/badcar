@@ -92,7 +92,7 @@ object BadCar {
       Json.obj(
         "id" -> t.id,
         "active" -> t.active,
-        "number" -> t.number.replaceAll("\s+",""),
+        "number" -> t.number.replaceAll("\\s+",""),
         "date" -> t.date,
         "fromplace" -> t.fromplace,
         "mark" -> t.mark,
