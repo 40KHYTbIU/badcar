@@ -32,6 +32,7 @@ object Application extends Controller with MongoController {
     // let's do our query
     val cursor: Cursor[BadCar] = collection.
       find(Json.obj()).
+      sort(Json.obj("id"->"-1")).
       cursor[BadCar]
 
     // gather all the JsObjects in a list

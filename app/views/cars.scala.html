@@ -1,17 +1,31 @@
 @(cars: List[models.BadCar])
 
-@main("Welcome to BadCar list") {
+@main("BadCar list") {
+
     <div class="row">
         <div class="span12">
             <h2>Bad cars</h2>
             @if(cars.isEmpty) {
                 <p>No cars.</p>
             } else {
-                <ul>
-                @cars.map { car =>
-                    <li>@car.mark.getOrElse(Mark(0,"Unknown")).title @car.number @car.fromplace @car.date</li>
-                }
-                </ul>
+                <table>
+                    <thead>
+                        <th>Mark</th>
+                        <th>Number</th>
+                        <th>Place</th>
+                        <th>Date</th>
+                    </thead>
+                    <tbody>
+                        @cars.map { car =>
+                            <tr>
+                                <td>@car.mark.getOrElse(Mark(0,"Unknown")).title</td>
+                                <td>@car.number</td>
+                                <td>@car.fromplace</td>
+                                <td>@car.date</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
             }
         </div>
     </div>
