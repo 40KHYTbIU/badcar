@@ -31,9 +31,7 @@ object Application extends Controller with MongoController {
   def index = Action.async {
     // let's do our query
     val cursor: Cursor[BadCar] = collection.
-      // find all people with name `name`
       find(Json.obj()).
-      // perform the query and get a cursor of JsObject
       cursor[BadCar]
 
     // gather all the JsObjects in a list

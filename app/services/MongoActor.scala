@@ -1,7 +1,6 @@
 package services
 
 import akka.actor._
-import com.typesafe.config.ConfigFactory
 import models.BadCar
 import org.slf4j.LoggerFactory
 import play.modules.reactivemongo.{ReactiveMongoPlugin, MongoController}
@@ -11,9 +10,9 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import play.api.Play.current
 
 class MongoActor extends Actor with ActorLogging {
-  val db = ReactiveMongoPlugin.db
   val logger = LoggerFactory.getLogger(this.getClass)
-  val collection: JSONCollection = db.collection[JSONCollection]("badcars")
+  val collection: JSONCollection =
+    ReactiveMongoPlugin.db.collection[JSONCollection]("badcars")
 
   override def receive: Receive = {
     //Запрос списка форумов для поиска
