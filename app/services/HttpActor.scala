@@ -18,38 +18,6 @@ class HttpActor extends Actor with ActorLogging {
   val url = "http://krd.ru/ajax/evacuated_avto/list.json?parent=45"
   val mongoActor = context.actorOf(Props[MongoActor], name = "mongoActor")
 
-  implicit val markReads: Reads[Mark] = (
-    (JsPath \ "id").read[Int] and
-      (JsPath \ "title").read[String]
-    )(Mark.apply _)
-
-  implicit val evacuatorReads: Reads[Evacuator] = (
-    (JsPath \ "id").read[Int] and
-      (JsPath \ "number").read[String]
-    )(Evacuator.apply _)
-
-  implicit val organizationReads: Reads[Organization] = (
-    (JsPath \ "id").read[Int] and
-      (JsPath \ "title").read[String]
-    )(Organization.apply _)
-
-  implicit val parkingReads: Reads[Parking] = (
-    (JsPath \ "id").read[Int] and
-      (JsPath \ "title").read[String]
-    )(Parking.apply _)
-
-  implicit val badCarReads: Reads[BadCar] = (
-    (JsPath \ "id").read[Int] and
-      (JsPath \ "active").read[Boolean] and
-      (JsPath \ "number").read[String] and
-      (JsPath \ "date").read[String] and //TODO:конвертировать в дату
-      (JsPath \ "fromplace").read[String] and
-      (JsPath \ "mark").readNullable[Mark] and
-      (JsPath \ "evacuator").readNullable[Evacuator] and
-      (JsPath \ "organization").readNullable[Organization] and
-      (JsPath \ "parking").readNullable[Parking]
-    )(BadCar.apply _)
-
   def read(url: String): String = io.Source.fromURL(url, "UTF-8").mkString.replaceAll("\n", "")
 
   def toJson = Json.parse(read(url))
