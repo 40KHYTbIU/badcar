@@ -2,31 +2,29 @@
 
 @main("BadCar list") {
 
-    <div class="row">
-        <div class="span12">
-            <h2>Bad cars</h2>
-            @if(cars.isEmpty) {
-                <p>No cars.</p>
-            } else {
-                <table>
-                    <thead>
-                        <th>Mark</th>
-                        <th>Number</th>
-                        <th>Place</th>
-                        <th>Date</th>
-                    </thead>
-                    <tbody>
-                        @cars.map { car =>
-                            <tr>
-                                <td>@car.mark.getOrElse(Mark(0,"Unknown")).title</td>
-                                <td>@car.number</td>
-                                <td>@car.fromplace</td>
-                                <td>@car.date</td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
-            }
-        </div>
+    <div style="align-content : center ;">
+        <h2 style="text-transform : uppercase ; ">Bad cars</h2>
+        @if(cars.isEmpty) {
+            <p>No cars.</p>
+        } else {
+            <table style="border: 1px solid #000;">
+                <thead>
+                    <th>Mark</th>
+                    <th>Number</th>
+                    <th>Place</th>
+                    <th>Date</th>
+                </thead>
+                <tbody>
+                @cars.map { car =>
+                    <tr style="border: 1px solid #000;">
+                        <td>@car.mark.getOrElse(Mark(0, "Unknown")).title</td>
+                        <td>@car.number</td>
+                        <td>@car.fromplace</td>
+                        <td>@car.date</td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        }
     </div>
 }
