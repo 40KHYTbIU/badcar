@@ -12,7 +12,7 @@ case class Evacuator(id: Int, number: String)
 
 case class Mark(id: Int, title: String)
 
-case class Organization(_d: Int, title: String)
+case class Organization(id: Int, title: String)
 
 case class Parking(id: Int, title: String)
 
@@ -21,13 +21,13 @@ case class BadCar(id: Int, active: Boolean, number: String, date: String, frompl
 object Mark {
 
   implicit val markReads: Reads[Mark] = (
-    (JsPath \ "_id").read[Int] and
+    (JsPath \ "id").read[Int] and
       (JsPath \ "title").read[String]
     )(Mark.apply _)
 
   implicit val markWrites = new Writes[Mark] {
     def writes(t: Mark): JsValue = {
-      Json.obj("_id" -> t.id, "title" -> t.title)
+      Json.obj("id" -> t.id, "title" -> t.title)
     }
   }
 }
@@ -35,13 +35,13 @@ object Mark {
 object Evacuator {
 
   implicit val evacuatorReads: Reads[Evacuator] = (
-    (JsPath \ "_id").read[Int] and
+    (JsPath \ "id").read[Int] and
       (JsPath \ "number").read[String]
     )(Evacuator.apply _)
 
   implicit val evacuatorWrites = new Writes[Evacuator] {
     def writes(t: Evacuator): JsValue = {
-      Json.obj("_id" -> t.id, "number" -> t.number)
+      Json.obj("id" -> t.id, "number" -> t.number)
     }
   }
 }
@@ -49,26 +49,26 @@ object Evacuator {
 object Organization {
 
   implicit val organizationReads: Reads[Organization] = (
-    (JsPath \ "_id").read[Int] and
+    (JsPath \ "id").read[Int] and
       (JsPath \ "title").read[String]
     )(Organization.apply _)
 
   implicit val organizationWrites = new Writes[Organization] {
     def writes(t: Organization): JsValue = {
-      Json.obj("_id" -> t.id, "title" -> t.title)
+      Json.obj("id" -> t.id, "title" -> t.title)
     }
   }
 }
 
 object Parking {
   implicit val parkingReads: Reads[Parking] = (
-    (JsPath \ "_id").read[Int] and
+    (JsPath \ "id").read[Int] and
       (JsPath \ "title").read[String]
     )(Parking.apply _)
 
   implicit val parkingWrites = new Writes[Parking] {
     def writes(t: Parking): JsValue = {
-      Json.obj("_id" -> t.id, "title" -> t.title)
+      Json.obj("id" -> t.id, "title" -> t.title)
     }
   }
 }
@@ -76,7 +76,7 @@ object Parking {
 object BadCar {
 
   implicit val badCarReads: Reads[BadCar] = (
-    (JsPath \ "_id").read[Int] and
+    (JsPath \ "id").read[Int] and
       (JsPath \ "active").read[Boolean] and
       (JsPath \ "number").read[String] and
       (JsPath \ "date").read[String] and //TODO:конвертировать в дату
@@ -90,7 +90,7 @@ object BadCar {
   implicit val badCarWrites = new Writes[BadCar] {
     def writes(t: BadCar): JsValue = {
       Json.obj(
-        "_id" -> t.id,
+        "id" -> t.id,
         "active" -> t.active,
         "number" -> t.number,
         "date" -> t.date,
