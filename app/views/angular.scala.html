@@ -1,13 +1,14 @@
 @main("Play+Angular") {
+    <h2 style="text-transform : uppercase ; ">Bad cars</h2>
     <div ng-app="BadCarApp">
         <div class="view-container" ng-controller="CarCtrl">
+            <button ng-click="getnew()">Check new</button>
             <table style="border: 1px solid #000;">
                 <thead>
                     <th>Mark</th>
                     <th>Number</th>
                     <th>Place</th>
                     <th>Date</th>
-                    <th>TimeStamp</th>
                 </thead>
                 <tbody>
                     <tr style="border: 1px solid #000;">
@@ -15,17 +16,16 @@
                         <td><input type="text" ng-model="search.number"></td>
                         <td><input type="text" ng-model="search.fromplace"></td>
                         <td><input type="text" ng-model="search.date"></td>
-                        <td><input type="text" ng-model="search.timestamp"></td>
                     </tr>
-                    <tr ng-repeat="car in badcars.list| filter:search" style="border: 1px solid #000;">
+                    <tr data-recordId="{{car.id}}" ng-repeat="car in badcars | orderBy:'-timestamp'| filter:search  " style="border: 1px solid #000;">
                         <td>{{car.mark.title}}</td>
                         <td>{{car.number}}</td>
                         <td>{{car.fromplace}}</td>
-                        <td>{{car.date}}</td>
-                        <td>{{car.timestamp}}</td>
+                        <td data-time="{{car.timestamp}}">{{car.date}}</td>
                     </tr>
                 </tbody>
             </table>
+            <button ng-click="getmore()">More...</button>
         </div>
     </div>
 }

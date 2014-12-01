@@ -5,50 +5,69 @@ import play.api._
 import play.api.mvc._
 import play.api.libs.json._
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
-import play.modules.reactivemongo.{ MongoController, ReactiveMongoPlugin }
+import play.modules.reactivemongo.{MongoController, ReactiveMongoPlugin}
 import scala.concurrent.Future
 import play.libs.Akka
 import akka.actor.Props
 import services.HttpActor
 import models._
+
 // Reactive Mongo imports
+
 import reactivemongo.api._
 
 // Reactive Mongo plugin, including the JSON-specialized collection
+
 import play.modules.reactivemongo.json.collection.JSONCollection
 
 object Application extends Controller with MongoController {
 
   val collection: JSONCollection = db.collection[JSONCollection]("badcars")
 
-  val httpActor = Akka.system.actorOf(Props[HttpActor], name = "httpActorUpdate")
+  //  val httpActor = Akka.system.actorOf(Props[HttpActor], name = "httpActorUpdate")
+
+  val httpActor = Akka.system.actorSelection("/user/httpActor")
+
+  def toInt(s: String): Option[Int] = {
+    try {
+      Some(s.toInt)
+    } catch {
+      case e: Exception => None
+    }
+  }
 
   def update = Action.async {
     httpActor ! "get"
-    Future(Ok("Updated"))
+    Future(Ok("Updating..."))
   }
 
-  def angular =  Action {
+  def index = Action {
     Ok(views.html.angular())
   }
 
-  def index = Action.async {
+  def getCars(count: Int, skip: Int, after: Long) = Action.async {
+
+    //Get records
+    val filter = if (after == 0) Json.obj() else Json.obj("timestamp" -> Json.obj("$gt" -> after));
+
     // let's do our query
     val cursor: Cursor[BadCar] = collection.
-      find(Json.obj()).
-      sort(Json.obj("id" -> -1)).
+      find(filter).
+      sort(Json.obj("timestamp" -> -1)).
+      options(QueryOpts(skip)).
       cursor[BadCar]
 
     // gather all the JsObjects in a list
-    val futureUsersList: Future[List[BadCar]] = cursor.collect[List]()
+    val futureUsersList: Future[List[BadCar]] = cursor.collect[List](count)
 
     // everything's ok! Let's reply with the array
-    futureUsersList.map { car =>
-      Ok(views.html.cars(car))
+    futureUsersList.map { cars =>
+      Ok(Json.toJson(cars))
     }.recover {
       case e =>
         e.printStackTrace()
         BadRequest(e.getMessage())
     }
   }
+
 }
