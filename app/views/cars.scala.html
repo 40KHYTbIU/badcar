@@ -13,6 +13,7 @@
                     <th>Number</th>
                     <th>Place</th>
                     <th>Date</th>
+                    <th>TimeStamp</th>
                 </thead>
                 <tbody>
                 @cars.map { car =>
@@ -21,6 +22,7 @@
                         <td>@car.number</td>
                         <td>@car.fromplace</td>
                         <td>@car.date</td>
+                        <td>@car.timestamp</td>
                     </tr>
                 }
                 </tbody>

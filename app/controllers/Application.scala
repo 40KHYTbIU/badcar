@@ -28,6 +28,10 @@ object Application extends Controller with MongoController {
     Future(Ok("Updated"))
   }
 
+  def angular =  Action {
+    Ok(views.html.angular())
+  }
+
   def index = Action.async {
     // let's do our query
     val cursor: Cursor[BadCar] = collection.

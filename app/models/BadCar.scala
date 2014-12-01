@@ -16,7 +16,7 @@ case class Organization(id: Int, title: String)
 
 case class Parking(id: Int, title: String)
 
-case class BadCar(id: Int, active: Boolean, number: String, date: String, fromplace: String, mark: Option[Mark], evacuator: Option[Evacuator], organization: Option[Organization], parking: Option[Parking])
+case class BadCar(id: Int, active: Boolean, number: String, date: String, timestamp: Option[Long], fromplace: String, mark: Option[Mark], evacuator: Option[Evacuator], organization: Option[Organization], parking: Option[Parking])
 
 object Mark {
 
@@ -74,12 +74,14 @@ object Parking {
 }
 
 object BadCar {
+  val format = new java.text.SimpleDateFormat("dd.MM.yyyy HH:mm")
 
   implicit val badCarReads: Reads[BadCar] = (
     (JsPath \ "id").read[Int] and
       (JsPath \ "active").read[Boolean] and
       (JsPath \ "number").read[String] and
-      (JsPath \ "date").read[String] and //TODO:конвертировать в дату
+      (JsPath \ "date").read[String] and
+      (JsPath \ "timestamp").readNullable[Long] and
       (JsPath \ "fromplace").read[String] and
       (JsPath \ "mark").readNullable[Mark] and
       (JsPath \ "evacuator").readNullable[Evacuator] and
@@ -94,6 +96,7 @@ object BadCar {
         "active" -> t.active,
         "number" -> t.number.replaceAll("\\s+",""),
         "date" -> t.date,
+        "timestamp" -> format.parse(t.date).getTime,
         "fromplace" -> t.fromplace,
         "mark" -> t.mark,
         "evacuator" -> t.evacuator,
