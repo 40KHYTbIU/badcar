@@ -1,13 +1,11 @@
-/*.infinite-scroll{*/
-    /*max-height: 400px;*/
-    /*min-height: 400px;*/
-    /*overflow-y: auto;*/
-/*}*/
-
-#content {
-    text-align: center;
-;
+#map-canvas {
+    height: 400px;
+    width: 800px;
+    margin: 0px auto;
+    padding: 0px
 }
+
+#content { text-align: center;}
 table {
     margin: 0 auto;
     border-collapse: collapse;
@@ -18,6 +16,4 @@ table tr td {
     border: 1px solid #000;
 }
 
-input {
-    width: 96%;
-}
+input { width: 96%; }

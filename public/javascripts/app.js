@@ -59,3 +59,43 @@ badCarApp.filter('orderObjectBy', function () {
 function CarCtrl($scope, Reddit) {
     $scope.reddit = new Reddit();
 }
+
+
+var citymap = {};
+citymap['krasnodar'] = {
+    center: new google.maps.LatLng(45.033333, 38.966667),
+    population: 744995
+};
+
+var cityCircle;
+
+function initialize() {
+    // Create the map.
+    var mapOptions = {
+        zoom: 13,
+        center: new google.maps.LatLng(45.033333, 38.966667),
+        mapTypeId: google.maps.MapTypeId.TERRAIN
+    };
+
+    var map = new google.maps.Map(document.getElementById('map-canvas'),
+        mapOptions);
+
+    // Construct the circle for each value in citymap.
+    // Note: We scale the area of the circle based on the population.
+    for (var city in citymap) {
+        var populationOptions = {
+            strokeColor: '#FF0000',
+            strokeOpacity: 0.8,
+            strokeWeight: 2,
+            fillColor: '#FF0000',
+            fillOpacity: 0.35,
+            map: map,
+            center: citymap[city].center,
+            radius: Math.sqrt(citymap[city].population)
+        };
+        // Add the circle for this city to the map.
+        cityCircle = new google.maps.Circle(populationOptions);
+    }
+}
+
+google.maps.event.addDomListener(window, 'load', initialize);
