@@ -1,37 +1,61 @@
-var badCarApp = angular.module('BadCarApp', []);
+var badCarApp = angular.module('BadCarApp', ['infinite-scroll']);
 
-function CarCtrl($scope, $http) {
+// Reddit constructor function to encapsulate HTTP and pagination logic
+badCarApp.factory('Reddit', function ($http) {
+    var Reddit = function () {
+        this.maxsize = 50;
+        this.pagesize = 20;
+        this.items = {};
+        this.busy = false;
+        this.last = 0;
+    };
 
-    $http.get('/get?count=30').
-        success(function (data, status, headers, config) {
-            $scope.badcars = data;
-        }).
-        error(function (data, status, headers, config) {
+    Reddit.prototype.nextPage = function () {
+        if (this.busy) return;
+        this.busy = true;
+        var len = Object.keys(this.items).length;
+        //First time we take maxsize
+        var count = (len == 0) ? this.maxsize : this.pagesize;
+        var url = "/get?count=" + count + "&skip=" + len;
+        $http.get(url).success(function (data) {
+            for (var i = 0; i < data.length; i++)
+                if (!this.items.hasOwnProperty(data[i].id)) {
+                    this.items[data[i].id] = data[i];
+                    //Save last timestamp
+                    if (data[i].timestamp > this.last)
+                        this.last = data[i].timestamp
+                }
+            this.busy = false;
+        }.bind(this));
+    };
+
+    Reddit.prototype.checkNew = function () {
+        var url = "/get?count=" + this.maxsize + "&after=" + this.last;
+        $http.get(url).success(function (data) {
+            for (var i = 0; i < data.length; i++) {
+                this.items[data[i].id] = data[i];
+                if (data[i].timestamp > this.last)
+                    this.last = data[i].timestamp
+            }
+        }.bind(this));
+    }
+    return Reddit;
+});
+
+badCarApp.filter('orderObjectBy', function () {
+    return function (items, field, reverse) {
+        var filtered = [];
+        angular.forEach(items, function (item) {
+            filtered.push(item);
         });
+        filtered.sort(function (a, b) {
+            return (a[field] > b[field] ? 1 : -1);
+        });
+        if (reverse) filtered.reverse();
+        return filtered;
+    };
+});
 
-    $scope.getmore = function () {
-        $http.get('/get?count=30&skip=' + $scope.badcars.length).
-            success(function (data, status, headers, config) {
-                if (data.length > 0) {
-                    $scope.badcars = $scope.badcars.concat(data);
-                    $scope.$apply();
-                }
-            }).
-            error(function (data, status, headers, config) {
-            });
-    }
-
-    $scope.getnew = function () {
-        if ($scope.badcars.length < 1) return 0;
-        $http.get('/get?count=1000&after=' + $scope.badcars[0].timestamp).
-            success(function (data, status, headers, config) {
-                if (data.length > 0) {
-                    $scope.badcars = data.concat($scope.badcars);
-                    $scope.$apply();
-                }
-            }).
-            error(function (data, status, headers, config) {
-            });
-    }
-
+function CarCtrl($scope, Reddit) {
+    $scope.reddit = new Reddit();
 }

@@ -16,7 +16,9 @@ case class Organization(id: Int, title: String)
 
 case class Parking(id: Int, title: String)
 
-case class BadCar(id: Int, active: Boolean, number: String, date: String, timestamp: Option[Long], fromplace: String, mark: Option[Mark], evacuator: Option[Evacuator], organization: Option[Organization], parking: Option[Parking])
+case class Location(lat: Double, lng: Double)
+
+case class BadCar(id: Int, active: Boolean, number: String, date: String, timestamp: Option[Long], fromplace: String, location:Option[Location], mark: Option[Mark], evacuator: Option[Evacuator], organization: Option[Organization], parking: Option[Parking])
 
 object Mark {
 
@@ -28,6 +30,21 @@ object Mark {
   implicit val markWrites = new Writes[Mark] {
     def writes(t: Mark): JsValue = {
       Json.obj("id" -> t.id, "title" -> t.title)
+    }
+  }
+}
+
+
+object Location {
+
+  implicit val locationReads: Reads[Location] = (
+    (JsPath \ "lat").read[Double] and
+      (JsPath \ "lng").read[Double]
+    )(Location.apply _)
+
+  implicit val locationWrites = new Writes[Location] {
+    def writes(t: Location): JsValue = {
+      Json.obj("lat" -> t.lat, "lng" -> t.lng)
     }
   }
 }
@@ -83,6 +100,7 @@ object BadCar {
       (JsPath \ "date").read[String] and
       (JsPath \ "timestamp").readNullable[Long] and
       (JsPath \ "fromplace").read[String] and
+      (JsPath \ "location").readNullable[Location] and
       (JsPath \ "mark").readNullable[Mark] and
       (JsPath \ "evacuator").readNullable[Evacuator] and
       (JsPath \ "organization").readNullable[Organization] and
@@ -98,6 +116,7 @@ object BadCar {
         "date" -> t.date,
         "timestamp" -> format.parse(t.date).getTime,
         "fromplace" -> t.fromplace,
+        "location" -> t.location,
         "mark" -> t.mark,
         "evacuator" -> t.evacuator,
         "organization" -> t.organization,

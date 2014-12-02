@@ -1,6 +1,7 @@
 package controllers
 
 import com.typesafe.config.ConfigFactory
+import org.slf4j.LoggerFactory
 import play.api._
 import play.api.mvc._
 import play.api.libs.json._
@@ -21,7 +22,7 @@ import reactivemongo.api._
 import play.modules.reactivemongo.json.collection.JSONCollection
 
 object Application extends Controller with MongoController {
-
+  val logger = LoggerFactory.getLogger(this.getClass)
   val collection: JSONCollection = db.collection[JSONCollection]("badcars")
 
   //  val httpActor = Akka.system.actorOf(Props[HttpActor], name = "httpActorUpdate")
@@ -49,6 +50,7 @@ object Application extends Controller with MongoController {
 
     //Get records
     val filter = if (after == 0) Json.obj() else Json.obj("timestamp" -> Json.obj("$gt" -> after));
+    logger.debug("Get cars request count:" + count + " skip:" + skip + " after:" + after)
 
     // let's do our query
     val cursor: Cursor[BadCar] = collection.
@@ -59,7 +61,7 @@ object Application extends Controller with MongoController {
 
     // gather all the JsObjects in a list
     val futureUsersList: Future[List[BadCar]] = cursor.collect[List](count)
-
+    logger.debug("Gets cars from mongo")
     // everything's ok! Let's reply with the array
     futureUsersList.map { cars =>
       Ok(Json.toJson(cars))

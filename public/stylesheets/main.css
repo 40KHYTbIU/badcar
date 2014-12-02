@@ -1,0 +1,23 @@
+/*.infinite-scroll{*/
+    /*max-height: 400px;*/
+    /*min-height: 400px;*/
+    /*overflow-y: auto;*/
+/*}*/
+
+#content {
+    text-align: center;
+;
+}
+table {
+    margin: 0 auto;
+    border-collapse: collapse;
+}
+
+table tr td {
+    text-align: left;
+    border: 1px solid #000;
+}
+
+input {
+    width: 96%;
+}
