@@ -17,8 +17,8 @@ import scala.collection.mutable
 class HttpActor extends Actor with ActorLogging {
   lazy val logger = LoggerFactory.getLogger(this.getClass)
   lazy val url = "http://krd.ru/ajax/evacuated_avto/list.json?parent=45"
-  lazy val mapUrl = "https://maps.googleapis.com/maps/api/geocode/json?key=AIzaSyDhVNg3fi2qfu3JrW-XBjRVmkv6PiDw8jg&address="
-  lazy val mapArea = "г.Краснодар+"
+  lazy val mapUrl = "https://maps.googleapis.com/maps/api/geocode/json?key=AIzaSyDhVNg3fi2qfu3JrW-XBjRVmkv6PiDw8jg&components=country:RU|administrative_area:Krasnodar&address="
+  lazy val mapArea = "Krasnodar+"
   lazy val defaultLocation = Location(45.033333D, 38.966667D)
   lazy val cacheAddr = mutable.HashMap[String, Location]()
   lazy val mongoActor = context.actorOf(Props[MongoActor], name = "mongoActor")
