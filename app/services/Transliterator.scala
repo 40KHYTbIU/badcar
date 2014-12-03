@@ -1,0 +1,81 @@
+package services
+
+import scala.collection.immutable.HashMap
+
+/**
+ * Created by Mike on 04/12/14.
+ */
+object Transliterator {
+  def dict(c: Char): String = c match {
+    case 'А' => "a"
+    case 'Б' => "B"
+    case 'В' => "V"
+    case 'Г' => "G"
+    case 'Д' => "D"
+    case 'Е' => "E"
+    case 'Ё' => "YO"
+    case 'Ж' => "ZH"
+    case 'З' => "Z"
+    case 'И' => "I"
+    case 'Й' => "Y"
+    case 'К' => "K"
+    case 'Л' => "L"
+    case 'М' => "M"
+    case 'Н' => "N"
+    case 'О' => "O"
+    case 'П' => "P"
+    case 'Р' => "R"
+    case 'С' => "S"
+    case 'Т' => "T"
+    case 'У' => "U"
+    case 'Ф' => "F"
+    case 'Х' => "KH"
+    case 'Ц' => "TS"
+    case 'Ч' => "CH"
+    case 'Ш' => "SH"
+    case 'Щ' => "SHCH"
+    case 'Ъ' => "'"
+    case 'Ы' => "I"
+    case 'Ь' => "'"
+    case 'Э' => "E"
+    case 'Ю' => "YU"
+    case 'Я' => "Ya"
+    case 'а' => "a"
+    case 'б' => "b"
+    case 'в' => "v"
+    case 'г' => "g"
+    case 'д' => "d"
+    case 'е' => "e"
+    case 'ё' => "yo"
+    case 'ж' => "zh"
+    case 'з' => "z"
+    case 'и' => "i"
+    case 'й' => "y"
+    case 'к' => "k"
+    case 'л' => "l"
+    case 'м' => "m"
+    case 'н' => "n"
+    case 'о' => "o"
+    case 'п' => "p"
+    case 'р' => "r"
+    case 'с' => "s"
+    case 'т' => "t"
+    case 'у' => "u"
+    case 'ф' => "f"
+    case 'х' => "kh"
+    case 'ц' => "ts"
+    case 'ч' => "ch"
+    case 'ш' => "sh"
+    case 'щ' => "shch"
+    case 'ъ' => "'"
+    case 'ы' => "i"
+    case 'ь' => "'"
+    case 'э' => "eh"
+    case 'ю' => "yu"
+    case 'я' => "ya"
+    case _ => c.toString
+  }
+
+  def translit(s: String): String =
+    s.map(c => dict(c)).mkString
+}
