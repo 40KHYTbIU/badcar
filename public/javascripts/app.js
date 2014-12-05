@@ -1,11 +1,21 @@
-var badCarApp = angular.module('BadCarApp', ['ui.grid', 'ui.grid.infiniteScroll', 'ui.grid.cellNav']);
+var badCarApp = angular.module('BadCarApp', ['ngAnimate', 'ui.grid', 'ui.grid.infiniteScroll', 'ui.grid.cellNav']);
 
-badCarApp.controller('CarCtrl', ['$scope', '$http', '$log', function ($scope, $http, $log) {
+badCarApp.controller('CarCtrl', ['$scope', '$interval', 'uiGridConstants', '$http', '$log' , function ($scope, $interval, uiGridConstants, $http, $log) {
     $scope.gridOptions = {};
-    $scope.itemsHash = {}
-    $scope.maxsize = 50;
+    $scope.itemsHash = {};
+    $scope.maxsize = 100;
     $scope.pagesize = 20;
-    $scope.last=0;
+    $scope.last = 0;
+
+    $scope.citycenter = new google.maps.LatLng(45.033333, 38.966667);
+    $scope.defaultZoom = 12;
+    $scope.map = new google.maps.Map(document.getElementById('map-canvas'),
+        {
+            zoom: $scope.defaultZoom,
+            center: $scope.citycenter,
+            mapTypeId: google.maps.MapTypeId.TERRAIN
+        });
+    $scope.cityCircle = 'undefined';
 
     /**
      * @ngdoc property
@@ -18,92 +28,106 @@ badCarApp.controller('CarCtrl', ['$scope', '$http', '$log', function ($scope, $h
     $scope.gridOptions.data = [];
     $scope.gridOptions.enableFiltering = true;
     $scope.gridOptions.columnDefs = [
-        { name: 'mark', field: 'mark.title' },
-        { name: 'number', field: 'number' },
-        { name: 'fromplace', field: 'fromplace'},
-        { name: 'location', field: 'location', enableFiltering: false, enableSorting: false},
-        { name: 'date', field: 'timestamp'}
-    ];
-    var page = 1;
-    var getData = function(data, page) {
-        var res = [];
-        for (var i = 0; i < page * 100 && i < data.length; ++i) {
-            res.push(data[i]);
+        { name: 'mark', field: 'mark.title', enableSorting: false, allowCellFocus : false,
+            filter: { condition: uiGridConstants.filter.CONTAINS }
+        },
+        { name: 'number', field: 'number', enableSorting: false, allowCellFocus : false,
+            filter: { condition: uiGridConstants.filter.CONTAINS }
+        },
+        { name: 'fromplace', field: 'fromplace', enableSorting: false,
+            filter: { condition: uiGridConstants.filter.CONTAINS }
+        },
+        { name: 'location', field: 'location', enableFiltering: false, enableSorting: false, allowCellFocus : false},
+        { name: 'date', field: 'date', enableSorting: false, allowCellFocus : false,
+            filter: { condition: uiGridConstants.filter.CONTAINS }
+        },
+        { name: 'timestamp', field: 'timestamp', allowCellFocus : false,
+            sort: { direction: uiGridConstants.DESC, priority: 1 },
+            visible: false
         }
-        return res;
-    };
+    ];
+
+    var update = $interval(function () {
+        getUpdate();
+    }, 60000);
+
+    function manageDate(data) {
+        for (var i = 0; i < data.length; i++)
+            if (!$scope.itemsHash.hasOwnProperty(data[i].id)) {
+                $scope.itemsHash[data[i].id] = 1;
+                $scope.gridOptions.data.push(data[i]);
+                //Save last timestamp
+                if (data[i].timestamp > $scope.last)
+                    $scope.last = data[i].timestamp
+            }
+    }
+
+    function getUpdate() {
+        $http.get("/get?count=1000&after=" + $scope.last)
+            .success(function (data) {
+                for (var i = data.length; i > 0; i--)
+                    if (!$scope.itemsHash.hasOwnProperty(data[i].id)) {
+                        $scope.itemsHash[data[i].id] = 1;
+                        $scope.gridOptions.data.unshift(data[i]);
+                        //Save last timestamp
+                        if (data[i].timestamp > $scope.last)
+                            $scope.last = data[i].timestamp
+                    }
+            });
+    }
 
     //First load
-    $http.get("/get?count="+$scope.maxsize+"&skip=0")
-        .success(function(data) {
-            for (var i = 0; i < data.length; i++)
-                if (!$scope.itemsHash.hasOwnProperty(data[i].id)) {
-                    $scope.itemsHash[data[i].id] = 1;
-                    $scope.gridOptions.data.push(data[i]);
-                    //Save last timestamp
-                    if (data[i].timestamp > $scope.last)
-                        $scope.last = data[i].timestamp
-                }
+    $http.get("/get?count=" + $scope.maxsize + "&skip=0")
+        .success(function (data) {
+            manageDate(data);
         });
 
-    $scope.gridOptions.onRegisterApi = function(gridApi){
-        gridApi.infiniteScroll.on.needLoadMoreData($scope,function(){
+    $scope.gridOptions.onRegisterApi = function (gridApi) {
+        gridApi.cellNav.on.navigate($scope, function (newRowCol, oldRowCol) {
+            //Delete previous point
+            if ($scope.cityCircle != 'undefined')
+                $scope.cityCircle.setMap(null);
+
+            var location = newRowCol.row.entity.location;
+            //Bad geo
+            if (location == null || location.lat == 0) {
+                $scope.map.setCenter($scope.citycenter);
+                $scope.map.setZoom($scope.defaultZoom);
+                alert("Sorry, we don't know where it is.");
+            }
+            else {
+                var point = new google.maps.LatLng(location.lat, location.lng);
+                var populationOptions = {
+                    strokeColor: '#FF0000',
+                    strokeOpacity: 0.8,
+                    strokeWeight: 2,
+                    fillColor: '#FF0000',
+                    fillOpacity: 0.35,
+                    map: $scope.map,
+                    center: point,
+                    radius: 30
+                };
+
+                // Add the circle for this city to the map.
+                $scope.cityCircle = new google.maps.Circle(populationOptions);
+                $scope.map.setCenter(point);
+                $scope.map.setZoom(15);
+            }
+            $log.log('navigation event' + newRowCol.row.entity.location);
+        });
+        $scope.gridApi = gridApi;
+        gridApi.infiniteScroll.on.needLoadMoreData($scope, function () {
             var len = Object.keys($scope.gridOptions.data).length;
             var urlNext = "/get?count=" + $scope.pagesize + "&skip=" + len;
             $http.get(urlNext)
-                .success(function(data) {
-                    for (var i = 0; i < data.length; i++)
-                        if (!$scope.itemsHash.hasOwnProperty(data[i].id)) {
-                            $scope.itemsHash[data[i].id] = 1;
-                            $scope.gridOptions.data.push(data[i]);
-                            //Save last timestamp
-                            if (data[i].timestamp > $scope.last)
-                                $scope.last = data[i].timestamp
-                        }
+                .success(function (data) {
+                    manageDate(data);
                     gridApi.infiniteScroll.dataLoaded();
                 })
-                .error(function() {
+                .error(function () {
                     gridApi.infiniteScroll.dataLoaded();
                 });
         });
     };
 }]);
 
-//var citymap = {};
-//citymap['krasnodar'] = {
-//    center: new google.maps.LatLng(45.033333, 38.966667),
-//    population: 744995
-//};
-//
-//var cityCircle;
-
-function initialize() {
-    // Create the map.
-    var mapOptions = {
-        zoom: 13,
-        center: new google.maps.LatLng(45.033333, 38.966667),
-        mapTypeId: google.maps.MapTypeId.TERRAIN
-    };
-
-    var map = new google.maps.Map(document.getElementById('map-canvas'),
-        mapOptions);
-
-    // Construct the circle for each value in citymap.
-    // Note: We scale the area of the circle based on the population.
-//    for (var city in citymap) {
-//        var populationOptions = {
-//            strokeColor: '#FF0000',
-//            strokeOpacity: 0.8,
-//            strokeWeight: 2,
-//            fillColor: '#FF0000',
-//            fillOpacity: 0.35,
-//            map: map,
-//            center: citymap[city].center,
-//            radius: Math.sqrt(citymap[city].population)
-//        };
-//        // Add the circle for this city to the map.
-//        cityCircle = new google.maps.Circle(populationOptions);
-//    }
-}
-
-google.maps.event.addDomListener(window, 'load', initialize);
