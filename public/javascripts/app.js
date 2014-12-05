@@ -37,7 +37,7 @@ badCarApp.controller('CarCtrl', ['$scope', '$interval', 'uiGridConstants', '$htt
         { name: 'fromplace', field: 'fromplace', enableSorting: false,
             filter: { condition: uiGridConstants.filter.CONTAINS }
         },
-        { name: 'location', field: 'location', enableFiltering: false, enableSorting: false, allowCellFocus : false},
+        { name: 'location', field: 'location', enableFiltering: false, enableSorting: false, allowCellFocus : false, visible: false},
         { name: 'date', field: 'date', enableSorting: false, allowCellFocus : false,
             filter: { condition: uiGridConstants.filter.CONTAINS }
         },
