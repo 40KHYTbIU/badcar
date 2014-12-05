@@ -4,35 +4,7 @@
         <div id="map-canvas"></div>
         <div ng-app="BadCarApp">
             <div class="view-container" ng-controller="CarCtrl">
-                <button ng-click="reddit.checkNew()">Check new</button>
-                <div class="infinite-scroll" infinite-scroll='reddit.nextPage()' infinite-scroll-disabled='reddit.busy' infinite-scroll-distance='0'>
-                    <table>
-                        <thead>
-                            <th>Mark</th>
-                            <th>Number</th>
-                            <th>Place</th>
-                            <th>Geo</th>
-                            <th>Date</th>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td><input type="text" ng-model="search.mark.title"></td>
-                                <td><input type="text" ng-model="search.number"></td>
-                                <td><input type="text" ng-model="search.fromplace"></td>
-                                <td></td>
-                                <td><input type="text" ng-model="search.date"></td>
-                            </tr>
-                            <tr data-recordId="{{car.id}}" data-lat="{{car.location.lat}}" data-lng="{{car.location.lng}}" ng-repeat="car in reddit.items | orderObjectBy:'-timestamp'| filter:search">
-                                <td>{{car.mark.title}}</td>
-                                <td>{{car.number}}</td>
-                                <td>{{car.fromplace}}</td>
-                                <td>{{car.location.lat}} {{car.location.lng}}</td>
-                                <td data-time="{{car.timestamp}}">{{car.date}}</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-                <div ng-show='reddit.busy'>Loading data...</div>
+                <div ui-grid="gridOptions" class="grid" ui-grid-infinite-scroll ui-grid-cellnav></div>
             </div>
         </div>
     </div>

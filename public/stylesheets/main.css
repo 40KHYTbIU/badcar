@@ -17,3 +17,11 @@ table tr td {
 }
 
 input { width: 96%; }
+
+.grid {
+    height: 400px;
+    width: 800px;
+    margin: 0 auto;
+    padding: 0;
+    text-align: left;
+}

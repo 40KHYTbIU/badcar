@@ -1,73 +1,81 @@
-var badCarApp = angular.module('BadCarApp', ['infinite-scroll']);
+var badCarApp = angular.module('BadCarApp', ['ui.grid', 'ui.grid.infiniteScroll', 'ui.grid.cellNav']);
 
-// Reddit constructor function to encapsulate HTTP and pagination logic
-badCarApp.factory('Reddit', function ($http) {
-    var Reddit = function () {
-        this.maxsize = 50;
-        this.pagesize = 20;
-        this.items = {};
-        this.busy = false;
-        this.last = 0;
+badCarApp.controller('CarCtrl', ['$scope', '$http', '$log', function ($scope, $http, $log) {
+    $scope.gridOptions = {};
+    $scope.itemsHash = {}
+    $scope.maxsize = 50;
+    $scope.pagesize = 20;
+    $scope.last=0;
+
+    /**
+     * @ngdoc property
+     * @name infiniteScrollPercentage
+     * @propertyOf ui.grid.class:GridOptions
+     * @description This setting controls at what percentage of the scroll more data
+     * is requested by the infinite scroll
+     */
+    $scope.gridOptions.infiniteScrollPercentage = 20;
+    $scope.gridOptions.data = [];
+    $scope.gridOptions.enableFiltering = true;
+    $scope.gridOptions.columnDefs = [
+        { name: 'mark', field: 'mark.title' },
+        { name: 'number', field: 'number' },
+        { name: 'fromplace', field: 'fromplace'},
+        { name: 'location', field: 'location', enableFiltering: false, enableSorting: false},
+        { name: 'date', field: 'timestamp'}
+    ];
+    var page = 1;
+    var getData = function(data, page) {
+        var res = [];
+        for (var i = 0; i < page * 100 && i < data.length; ++i) {
+            res.push(data[i]);
+        }
+        return res;
     };
 
-    Reddit.prototype.nextPage = function () {
-        if (this.busy) return;
-        this.busy = true;
-        var len = Object.keys(this.items).length;
-        //First time we take maxsize
-        var count = (len == 0) ? this.maxsize : this.pagesize;
-        var url = "/get?count=" + count + "&skip=" + len;
-        $http.get(url).success(function (data) {
+    //First load
+    $http.get("/get?count="+$scope.maxsize+"&skip=0")
+        .success(function(data) {
             for (var i = 0; i < data.length; i++)
-                if (!this.items.hasOwnProperty(data[i].id)) {
-                    this.items[data[i].id] = data[i];
+                if (!$scope.itemsHash.hasOwnProperty(data[i].id)) {
+                    $scope.itemsHash[data[i].id] = 1;
+                    $scope.gridOptions.data.push(data[i]);
                     //Save last timestamp
-                    if (data[i].timestamp > this.last)
-                        this.last = data[i].timestamp
+                    if (data[i].timestamp > $scope.last)
+                        $scope.last = data[i].timestamp
                 }
-            this.busy = false;
-        }.bind(this));
-    };
-
-    Reddit.prototype.checkNew = function () {
-        var url = "/get?count=" + this.maxsize + "&after=" + this.last;
-        $http.get(url).success(function (data) {
-            for (var i = 0; i < data.length; i++) {
-                this.items[data[i].id] = data[i];
-                if (data[i].timestamp > this.last)
-                    this.last = data[i].timestamp
-            }
-        }.bind(this));
-    }
-    return Reddit;
-});
-
-badCarApp.filter('orderObjectBy', function () {
-    return function (items, field, reverse) {
-        var filtered = [];
-        angular.forEach(items, function (item) {
-            filtered.push(item);
         });
-        filtered.sort(function (a, b) {
-            return (a[field] > b[field] ? 1 : -1);
+
+    $scope.gridOptions.onRegisterApi = function(gridApi){
+        gridApi.infiniteScroll.on.needLoadMoreData($scope,function(){
+            var len = Object.keys($scope.gridOptions.data).length;
+            var urlNext = "/get?count=" + $scope.pagesize + "&skip=" + len;
+            $http.get(urlNext)
+                .success(function(data) {
+                    for (var i = 0; i < data.length; i++)
+                        if (!$scope.itemsHash.hasOwnProperty(data[i].id)) {
+                            $scope.itemsHash[data[i].id] = 1;
+                            $scope.gridOptions.data.push(data[i]);
+                            //Save last timestamp
+                            if (data[i].timestamp > $scope.last)
+                                $scope.last = data[i].timestamp
+                        }
+                    gridApi.infiniteScroll.dataLoaded();
+                })
+                .error(function() {
+                    gridApi.infiniteScroll.dataLoaded();
+                });
         });
-        if (reverse) filtered.reverse();
-        return filtered;
     };
-});
+}]);
 
-function CarCtrl($scope, Reddit) {
-    $scope.reddit = new Reddit();
-}
-
-
-var citymap = {};
-citymap['krasnodar'] = {
-    center: new google.maps.LatLng(45.033333, 38.966667),
-    population: 744995
-};
-
-var cityCircle;
+//var citymap = {};
+//citymap['krasnodar'] = {
+//    center: new google.maps.LatLng(45.033333, 38.966667),
+//    population: 744995
+//};
+//
+//var cityCircle;
 
 function initialize() {
     // Create the map.
@@ -82,20 +90,20 @@ function initialize() {
 
     // Construct the circle for each value in citymap.
     // Note: We scale the area of the circle based on the population.
-    for (var city in citymap) {
-        var populationOptions = {
-            strokeColor: '#FF0000',
-            strokeOpacity: 0.8,
-            strokeWeight: 2,
-            fillColor: '#FF0000',
-            fillOpacity: 0.35,
-            map: map,
-            center: citymap[city].center,
-            radius: Math.sqrt(citymap[city].population)
-        };
-        // Add the circle for this city to the map.
-        cityCircle = new google.maps.Circle(populationOptions);
-    }
+//    for (var city in citymap) {
+//        var populationOptions = {
+//            strokeColor: '#FF0000',
+//            strokeOpacity: 0.8,
+//            strokeWeight: 2,
+//            fillColor: '#FF0000',
+//            fillOpacity: 0.35,
+//            map: map,
+//            center: citymap[city].center,
+//            radius: Math.sqrt(citymap[city].population)
+//        };
+//        // Add the circle for this city to the map.
+//        cityCircle = new google.maps.Circle(populationOptions);
+//    }
 }
 
 google.maps.event.addDomListener(window, 'load', initialize);
