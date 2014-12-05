@@ -20,12 +20,10 @@ import reactivemongo.api._
 // Reactive Mongo plugin, including the JSON-specialized collection
 
 import play.modules.reactivemongo.json.collection.JSONCollection
-
+//TODO: TESTING!!!
 object Application extends Controller with MongoController {
   val logger = LoggerFactory.getLogger(this.getClass)
   val collection: JSONCollection = db.collection[JSONCollection]("badcars")
-
-  //  val httpActor = Akka.system.actorOf(Props[HttpActor], name = "httpActorUpdate")
 
   val httpActor = Akka.system.actorSelection("/user/httpActor")
 

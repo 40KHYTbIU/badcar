@@ -18,6 +18,7 @@ class MongoActor extends Actor with ActorLogging {
     //Запрос списка форумов для поиска
     case cars: Array[BadCar] => {
       logger.debug("Got cars list for insert")
+      //TODO: update status
       cars.foreach(collection.insert(_))
     }
 
