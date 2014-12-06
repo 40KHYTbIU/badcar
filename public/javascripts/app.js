@@ -65,7 +65,7 @@ badCarApp.controller('CarCtrl', ['$scope', '$interval', 'uiGridConstants', '$htt
     function getUpdate() {
         $http.get("/get?count=1000&after=" + $scope.last)
             .success(function (data) {
-                for (var i = data.length; i > 0; i--)
+                for (var i = data.length - 1; i >= 0; i--)
                     if (!$scope.itemsHash.hasOwnProperty(data[i].id)) {
                         $scope.itemsHash[data[i].id] = 1;
                         $scope.gridOptions.data.unshift(data[i]);
