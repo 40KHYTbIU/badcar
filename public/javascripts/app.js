@@ -3,6 +3,7 @@ var badCarApp = angular.module('BadCarApp', ['ngAnimate', 'ui.grid', 'ui.grid.in
 badCarApp.controller('CarCtrl', ['$scope', '$interval', 'uiGridConstants', '$http', '$log' , function ($scope, $interval, uiGridConstants, $http, $log) {
     $scope.gridOptions = {};
     $scope.itemsHash = {};
+    $scope.activeCarsHash = {};
     $scope.maxsize = 100;
     $scope.pagesize = 20;
     $scope.last = 0;
@@ -28,6 +29,7 @@ badCarApp.controller('CarCtrl', ['$scope', '$interval', 'uiGridConstants', '$htt
     $scope.gridOptions.data = [];
     $scope.gridOptions.enableFiltering = true;
     $scope.gridOptions.columnDefs = [
+        { name: 'active', field: 'active', enableFiltering: false, enableSorting: false, allowCellFocus : false, visible: false},
         { name: 'mark', field: 'mark.title', enableSorting: false, allowCellFocus : false,
             filter: { condition: uiGridConstants.filter.CONTAINS }
         },
@@ -49,6 +51,7 @@ badCarApp.controller('CarCtrl', ['$scope', '$interval', 'uiGridConstants', '$htt
 
     var update = $interval(function () {
         getUpdate();
+        getActiveCars();
     }, 60000);
 
     function manageDate(data) {
@@ -76,7 +79,20 @@ badCarApp.controller('CarCtrl', ['$scope', '$interval', 'uiGridConstants', '$htt
             });
     }
 
+    function getActiveCars() {
+        $http.get("/getActive")
+            .success(function (data) {
+                for (var i = data.length - 1; i >= 0; i--)
+                    if (!$scope.activeCarsHash.hasOwnProperty(data[i].id)) {
+                        $scope.activeCarsHash[data[i].id] = 1;
+                        //TODO:create points on map
+                    }
+            });
+    }
+
     //First load
+    getActiveCars();
+
     $http.get("/get?count=" + $scope.maxsize + "&skip=0")
         .success(function (data) {
             manageDate(data);

@@ -70,4 +70,18 @@ object Application extends Controller with MongoController {
     }
   }
 
+  def getActiveCars = Action.async {
+    val filter = Json.obj("active" -> true)
+    val cursor: Cursor[BadCar] = collection.find(filter).cursor[BadCar]
+    val futureUsersList: Future[List[BadCar]] = cursor.collect[List]()
+    logger.debug("Gets active cars from mongo")
+    futureUsersList.map { cars =>
+      Ok(Json.toJson(cars))
+    }.recover {
+      case e =>
+        e.printStackTrace()
+        BadRequest(e.getMessage())
+    }
+  }
+
 }

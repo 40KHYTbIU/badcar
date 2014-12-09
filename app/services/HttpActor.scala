@@ -68,16 +68,16 @@ class HttpActor extends Actor with ActorLogging {
     case "get" => {
       var page = 1
       var pageCount = 1
+      mongoActor ! "dropStatus"
       do {
         val result = pageToJson(page)
         //First time get pagecount
         if (1 == page) pageCount = (result \ "page_count").as[Int]
         val badCars = (result \ "items").as[Seq[BadCar]]
-        //mongoActor ! badCars.toArray
-        mongoActor ! badCars.map(x => x.copy(location = Some(getLocation(x.fromplace)))).toArray
+        mongoActor ! badCars.map(x => if (x.fromplace.toLowerCase.equals("н/у")) x.copy(fromplace = "") else x.copy(location = Some(getLocation(x.fromplace)))).toArray
         logger.debug("Result is: " + badCars)
         page += 1
-      } while (page < pageCount)
+      } while (page <= pageCount)
 
       logger.debug("Page count is: " + pageCount)
 
