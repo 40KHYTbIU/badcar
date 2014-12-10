@@ -4,6 +4,7 @@ badCarApp.controller('CarCtrl', ['$scope', '$interval', 'uiGridConstants', '$htt
     $scope.gridOptions = {};
     $scope.itemsHash = {};
     $scope.activeCarsHash = {};
+    $scope.currentMarker = undefined;
     $scope.maxsize = 100;
     $scope.pagesize = 20;
     $scope.last = 0;
@@ -16,7 +17,6 @@ badCarApp.controller('CarCtrl', ['$scope', '$interval', 'uiGridConstants', '$htt
             center: $scope.citycenter,
             mapTypeId: google.maps.MapTypeId.TERRAIN
         });
-    $scope.cityCircle = 'undefined';
 
     /**
      * @ngdoc property
@@ -28,6 +28,9 @@ badCarApp.controller('CarCtrl', ['$scope', '$interval', 'uiGridConstants', '$htt
     $scope.gridOptions.infiniteScrollPercentage = 20;
     $scope.gridOptions.data = [];
     $scope.gridOptions.enableFiltering = true;
+    $scope.gridOptions.enableRowSelection = true;
+    $scope.gridOptions.multiSelect = true;
+
     $scope.gridOptions.columnDefs = [
         { name: 'active', field: 'active', enableFiltering: false, enableSorting: false, allowCellFocus : false, visible: false},
         { name: 'mark', field: 'mark.title', enableSorting: false, allowCellFocus : false,
@@ -37,7 +40,13 @@ badCarApp.controller('CarCtrl', ['$scope', '$interval', 'uiGridConstants', '$htt
             filter: { condition: uiGridConstants.filter.CONTAINS }
         },
         { name: 'fromplace', field: 'fromplace', enableSorting: false,
-            filter: { condition: uiGridConstants.filter.CONTAINS }
+            filter: { condition: uiGridConstants.filter.CONTAINS },
+            cellClass: function(grid, row, col, rowRenderIndex, colRenderIndex) {
+                if (row.entity.active)
+                    return 'active';
+                else
+                    return 'deactive';
+        }
         },
         { name: 'location', field: 'location', enableFiltering: false, enableSorting: false, allowCellFocus : false, visible: false},
         { name: 'date', field: 'date', enableSorting: false, allowCellFocus : false,
@@ -82,11 +91,24 @@ badCarApp.controller('CarCtrl', ['$scope', '$interval', 'uiGridConstants', '$htt
     function getActiveCars() {
         $http.get("/getActive")
             .success(function (data) {
-                for (var i = data.length - 1; i >= 0; i--)
-                    if (!$scope.activeCarsHash.hasOwnProperty(data[i].id)) {
-                        $scope.activeCarsHash[data[i].id] = 1;
-                        //TODO:create points on map
+                var activeCarsList = [];
+                for (var i = data.length - 1; i >= 0; i--) {
+                    activeCarsList.push(data[i].id);
+                    if (data[i].hasOwnProperty("location") && data[i].location != null && !$scope.activeCarsHash.hasOwnProperty(data[i].id)) {
+                        var point = new google.maps.LatLng(data[i].location.lat, data[i].location.lng);
+                        $scope.activeCarsHash[data[i].id] = new google.maps.Marker({
+                            position: point,
+                            map: $scope.map,
+                            animation: google.maps.Animation.DROP,
+                            title: data[i].number
+                        });
                     }
+                }
+                //Delete deactivated markers
+                for (key in $scope.activeCarsHash) {
+                    if ($scope.activeCarsHash.hasOwnProperty(key) && activeCarsList.indexOf(key) == -1)
+                        delete $scope.activeCarsHash[key];
+                }
             });
     }
 
@@ -100,11 +122,15 @@ badCarApp.controller('CarCtrl', ['$scope', '$interval', 'uiGridConstants', '$htt
 
     $scope.gridOptions.onRegisterApi = function (gridApi) {
         gridApi.cellNav.on.navigate($scope, function (newRowCol, oldRowCol) {
+            var entity = newRowCol.row.entity;
             //Delete previous point
-            if ($scope.cityCircle != 'undefined')
-                $scope.cityCircle.setMap(null);
-
-            var location = newRowCol.row.entity.location;
+            if ($scope.currentMarker != undefined) {
+                if (oldRowCol != null && !$scope.activeCarsHash.hasOwnProperty(oldRowCol.row.entity.id))
+                    $scope.currentMarker.setMap(null);
+                else
+                    $scope.currentMarker.setAnimation(null);
+            }
+            var location = entity.location;
             //Bad geo
             if (location == null || location.lat == 0) {
                 $scope.map.setCenter($scope.citycenter);
@@ -113,21 +139,20 @@ badCarApp.controller('CarCtrl', ['$scope', '$interval', 'uiGridConstants', '$htt
             }
             else {
                 var point = new google.maps.LatLng(location.lat, location.lng);
-                var populationOptions = {
-                    strokeColor: '#FF0000',
-                    strokeOpacity: 0.8,
-                    strokeWeight: 2,
-                    fillColor: '#FF0000',
-                    fillOpacity: 0.35,
-                    map: $scope.map,
-                    center: point,
-                    radius: 30
-                };
+                if(oldRowCol == null || !$scope.activeCarsHash.hasOwnProperty(oldRowCol.row.entity.id)) {
+                    $scope.currentMarker = new google.maps.Marker({
+                        position: point,
+                        animation: google.maps.Animation.BOUNCE,
+                        map: $scope.map,
+                        title: entity.number
+                    });
+                } else {
+                    $scope.currentMarker = $scope.activeCarsHash[entity.id];
+                    $scope.currentMarker.setAnimation(google.maps.Animation.BOUNCE);
+                }
 
-                // Add the circle for this city to the map.
-                $scope.cityCircle = new google.maps.Circle(populationOptions);
                 $scope.map.setCenter(point);
-                $scope.map.setZoom(15);
+                $scope.map.setZoom($scope.defaultZoom);
             }
             $log.log('navigation event' + newRowCol.row.entity.location);
         });
