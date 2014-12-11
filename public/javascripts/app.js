@@ -97,8 +97,9 @@ badCarApp.controller('CarCtrl', ['$scope', '$interval', 'uiGridConstants', '$htt
                 }
                 //Delete deactivated markers
                 for (key in $scope.activeCarsHash) {
-                    if ($scope.activeCarsHash.hasOwnProperty(key) && activeCarsList.indexOf(key) == -1)
-                        delete $scope.activeCarsHash[key];
+                    var keyInt = parseInt(key);
+                    if ($scope.activeCarsHash.hasOwnProperty(keyInt) && activeCarsList.indexOf(keyInt) == -1)
+                        delete $scope.activeCarsHash[keyInt];
                 }
             });
     }
