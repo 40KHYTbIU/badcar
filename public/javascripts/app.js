@@ -79,6 +79,23 @@ badCarApp.controller('CarCtrl', ['$scope', '$interval', 'uiGridConstants', '$htt
             });
     }
 
+    function makeInfoContent(carEntity) {
+        return '<div class="infoWindow">'+
+            '<span>'+carEntity.mark.title+'</span></br>' +
+            '<span>'+carEntity.number+'</span></br>' +
+            '<span>'+carEntity.fromplace+'</span></br>' +
+            '</div>'
+    }
+
+    function markerClick() {
+        if (this.getAnimation() != null) {
+            this.setAnimation(null);
+        } else {
+            this.infowindow.open($scope.map, this);
+        }
+    }
+
+
     function getActiveCars() {
         $http.get("/getActive")
             .success(function (data) {
@@ -87,12 +104,16 @@ badCarApp.controller('CarCtrl', ['$scope', '$interval', 'uiGridConstants', '$htt
                     activeCarsList.push(data[i].id);
                     if (data[i].hasOwnProperty("location") && data[i].location != null && !$scope.activeCarsHash.hasOwnProperty(data[i].id)) {
                         var point = new google.maps.LatLng(data[i].location.lat, data[i].location.lng);
-                        $scope.activeCarsHash[data[i].id] = new google.maps.Marker({
+                        var marker = new google.maps.Marker({
                             position: point,
                             map: $scope.map,
-                            animation: google.maps.Animation.DROP,
-                            title: data[i].number
+                            animation: google.maps.Animation.DROP
                         });
+                        marker.infowindow = new google.maps.InfoWindow({
+                            content: makeInfoContent(data[i])
+                        });
+                        google.maps.event.addListener(marker, 'click', markerClick);
+                        $scope.activeCarsHash[data[i].id] = marker;
                     }
                 }
                 //Delete deactivated markers
@@ -131,13 +152,19 @@ badCarApp.controller('CarCtrl', ['$scope', '$interval', 'uiGridConstants', '$htt
             }
             else {
                 var point = new google.maps.LatLng(location.lat, location.lng);
-                if(oldRowCol == null || !$scope.activeCarsHash.hasOwnProperty(oldRowCol.row.entity.id)) {
-                    $scope.currentMarker = new google.maps.Marker({
+                if (oldRowCol == null || !$scope.activeCarsHash.hasOwnProperty(oldRowCol.row.entity.id)) {
+
+                    var marker = new google.maps.Marker({
                         position: point,
                         animation: google.maps.Animation.BOUNCE,
-                        map: $scope.map,
-                        title: entity.number
+                        map: $scope.map
                     });
+                    //TODO: template infowindow
+                    marker.infowindow = new google.maps.InfoWindow({
+                        content: makeInfoContent(entity)
+                    });
+                    google.maps.event.addListener(marker, 'click', markerClick);
+                    $scope.currentMarker = marker;
                 } else {
                     $scope.currentMarker = $scope.activeCarsHash[entity.id];
                     $scope.currentMarker.setAnimation(google.maps.Animation.BOUNCE);
