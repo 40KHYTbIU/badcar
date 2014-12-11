@@ -1,10 +1,14 @@
-@main("Play+Angular") {
+@main("Krasnodar evacuation") {
     <div id="content">
-        <h2>Cars are evacuated</h2>
         <div id="map-canvas"></div>
         <div ng-app="BadCarApp">
             <div class="view-container" ng-controller="CarCtrl">
-                <div ui-grid="gridOptions" class="grid" ui-grid-infinite-scroll ui-grid-cellnav></div>
+                <button type="button" class="hideBtn" ng-click="hideGrid = !hideGrid">
+                    {{ hideGrid && 'Show' || 'Hide' }} Details
+                </button>
+                <div class="well" ng-hide="hideGrid">
+                    <div ui-grid="gridOptions" class="grid" ui-grid-infinite-scroll ui-grid-cellnav></div>
+                </div>
             </div>
         </div>
     </div>

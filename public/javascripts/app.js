@@ -9,47 +9,38 @@ badCarApp.controller('CarCtrl', ['$scope', '$interval', 'uiGridConstants', '$htt
     $scope.pagesize = 20;
     $scope.last = 0;
 
+    $scope.hideGrid = false;
+
     $scope.citycenter = new google.maps.LatLng(45.033333, 38.966667);
     $scope.defaultZoom = 12;
+    $scope.carZoom = 15;
     $scope.map = new google.maps.Map(document.getElementById('map-canvas'),
         {
             zoom: $scope.defaultZoom,
             center: $scope.citycenter,
+            mapTypeControl: false,
+            streetViewControl: false,
             mapTypeId: google.maps.MapTypeId.TERRAIN
         });
 
-    /**
-     * @ngdoc property
-     * @name infiniteScrollPercentage
-     * @propertyOf ui.grid.class:GridOptions
-     * @description This setting controls at what percentage of the scroll more data
-     * is requested by the infinite scroll
-     */
     $scope.gridOptions.infiniteScrollPercentage = 20;
     $scope.gridOptions.data = [];
     $scope.gridOptions.enableFiltering = true;
+    $scope.gridOptions.enableColumnMenu = false;
     $scope.gridOptions.enableRowSelection = true;
     $scope.gridOptions.multiSelect = true;
 
     $scope.gridOptions.columnDefs = [
-        { name: 'active', field: 'active', enableFiltering: false, enableSorting: false, allowCellFocus : false, visible: false},
-        { name: 'mark', field: 'mark.title', enableSorting: false, allowCellFocus : false,
-            filter: { condition: uiGridConstants.filter.CONTAINS }
-        },
-        { name: 'number', field: 'number', enableSorting: false, allowCellFocus : false,
-            filter: { condition: uiGridConstants.filter.CONTAINS }
-        },
-        { name: 'fromplace', field: 'fromplace', enableSorting: false,
+        { name: 'number', field: 'number', enableSorting: false, enableColumnMenu: false,
             filter: { condition: uiGridConstants.filter.CONTAINS },
-            cellClass: function(grid, row, col, rowRenderIndex, colRenderIndex) {
+            cellClass: function (grid, row, col, rowRenderIndex, colRenderIndex) {
                 if (row.entity.active)
                     return 'active';
                 else
                     return 'deactive';
-        }
+            }
         },
-        { name: 'location', field: 'location', enableFiltering: false, enableSorting: false, allowCellFocus : false, visible: false},
-        { name: 'date', field: 'date', enableSorting: false, allowCellFocus : false,
+        { name: 'date', field: 'date', enableSorting: false, allowCellFocus : false, enableFiltering: false, enableColumnMenu: false,
             filter: { condition: uiGridConstants.filter.CONTAINS }
         },
         { name: 'timestamp', field: 'timestamp', allowCellFocus : false,
@@ -152,7 +143,7 @@ badCarApp.controller('CarCtrl', ['$scope', '$interval', 'uiGridConstants', '$htt
                 }
 
                 $scope.map.setCenter(point);
-                $scope.map.setZoom($scope.defaultZoom);
+                $scope.map.setZoom($scope.carZoom);
             }
             $log.log('navigation event' + newRowCol.row.entity.location);
         });

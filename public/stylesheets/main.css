@@ -1,19 +1,24 @@
-#content > h2 { text-align: center;}
-
-#map-canvas {
-    height: 400px;
-    width: 800px;
-    margin: 0px auto;
-    padding: 0px
+html, body, #content, #map-canvas {
+    height: 100%;
+    margin: 0;
+    padding: 0;
 }
 
 .grid {
+    position: absolute;
+    top: 28px;
+    right: 0;
     min-height: 400px;
-    max-height: 1000px;
-    width: 800px;
+    width: 300px;
     margin: 0 auto;
     padding: 0;
     text-align: left;
+}
+
+.hideBtn {
+    position: absolute;
+    top: 4px;
+    right: 4px;
 }
 
 .active { color: #000000; }
