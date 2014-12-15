@@ -9,6 +9,8 @@ import play.api.libs.json._
 import play.api.libs.json.Reads._
 import play.api.libs.functional.syntax._
 import scala.collection.mutable
+import play.api.cache._
+import play.api.Play.current
 
 /**
  * Created by Mike on 06/11/14.
@@ -29,39 +31,37 @@ class HttpActor extends Actor with ActorLogging {
   val mapUrl = "https://maps.googleapis.com/maps/api/geocode/json?key=AIzaSyDhVNg3fi2qfu3JrW-XBjRVmkv6PiDw8jg&components=country:RU|administrative_area_level_2:g.+Krasnodar&bound=" +
     SW_LAT + "," + SW_LNG + "|" + NE_LAT + "," + NE_LNG + "&address=Krasnodar+"
 
-  //TODO: move to reddis?
-  val cacheAddr = mutable.HashMap[String, Location]()
-
   def read(url: String): String = io.Source.fromURL(url, "UTF-8").mkString.replaceAll("\n", "")
 
   def toJson = Json.parse(read(URL))
 
   def pageToJson(page: Int) = Json.parse(read(URL + "&page=" + page))
 
-  //TODO: get location only for new records
-  def getLocation(addr: String): Location = {
-    val transAddr = Transliterator.translit(addr.replaceAll("\\s+", "+"))
-    val url = mapUrl + transAddr
-
-    if (!cacheAddr.contains(transAddr)) {
+  def getLocationRedis(addr: String): Location = {
+    //Redis-cache
+    Cache.getOrElse[Location](addr) {
+      val transAddr = Transliterator.translit(addr.replaceAll("\\s+", "+"))
+      val url = mapUrl + transAddr
       val jsonResult = Json.parse(read(url))
       logger.debug("Geo result: " + jsonResult)
 
       val locations = (jsonResult \\ "location").map(_.as[Location])
-      if (locations.length > 0){
+      if (locations.length > 0) {
         val loc = locations.head
         //Check correct geo
         val Location(lat, lng) = loc
         if (lat >= SW_LAT && lat <= NE_LAT
-          && lng >= SW_LNG && lng <= NE_LNG)
-          cacheAddr.put(transAddr, loc)
+          && lng >= SW_LNG && lng <= NE_LNG)  {
+          Cache.set(addr, loc)
+          return loc
+        }
         else
           logger.error("Error GEO for " + transAddr + " : " + loc)
       }
       else
         logger.debug("ERROR LOCATION:" + jsonResult)
+      badGeo
     }
-    cacheAddr.getOrElse(transAddr, badGeo)
   }
 
   def receive = {
@@ -74,7 +74,7 @@ class HttpActor extends Actor with ActorLogging {
         //First time get pagecount
         if (1 == page) pageCount = (result \ "page_count").as[Int]
         val badCars = (result \ "items").as[Seq[BadCar]]
-        mongoActor ! badCars.map(x => if (x.fromplace.toLowerCase.equals("н/у")) x.copy(fromplace = "") else x.copy(location = Some(getLocation(x.fromplace)))).toArray
+        mongoActor ! badCars.map(x => if (x.fromplace.toLowerCase.equals("н/у")) x.copy(fromplace = "") else x.copy(location = Some(getLocationRedis(x.fromplace)))).toArray
         logger.debug("Result is: " + badCars)
         page += 1
       } while (page <= pageCount)

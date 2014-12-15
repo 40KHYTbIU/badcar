@@ -47,7 +47,7 @@ object Application extends Controller with MongoController {
   def getCars(count: Int, skip: Int, after: Long) = Action.async {
 
     //Get records
-    val filter = if (after == 0) Json.obj() else Json.obj("timestamp" -> Json.obj("$gt" -> after));
+    val filter = if (after == 0) Json.obj() else Json.obj("timestamp" -> Json.obj("$gt" -> after))
     logger.debug("Get cars request count:" + count + " skip:" + skip + " after:" + after)
 
     // let's do our query
@@ -66,7 +66,7 @@ object Application extends Controller with MongoController {
     }.recover {
       case e =>
         e.printStackTrace()
-        BadRequest(e.getMessage())
+        BadRequest(e.getMessage)
     }
   }
 
@@ -80,7 +80,7 @@ object Application extends Controller with MongoController {
     }.recover {
       case e =>
         e.printStackTrace()
-        BadRequest(e.getMessage())
+        BadRequest(e.getMessage)
     }
   }
 
