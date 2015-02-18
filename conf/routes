@@ -3,7 +3,12 @@
 # ~~~~
 
 # Home page
-GET        /                    controllers.Application.index
+#GET        /                    controllers.Application.index
+
+GET        /                    controllers.Application.realtime
+GET        /statistic           controllers.Application.statistic
+GET        /reports             controllers.Application.reports
+GET        /about               controllers.Application.about
 
 GET        /get                 controllers.Application.getCars(count:Int ?= 10, skip:Int ?= 0, after:Long ?= 0)
 

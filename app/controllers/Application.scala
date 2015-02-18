@@ -41,8 +41,22 @@ object Application extends Controller with MongoController {
   }
 
   def index = Action {
-    Ok(views.html.angular())
+    Ok(views.html.index())
   }
+
+  def realtime = Action {
+    Ok(views.html.realtime())
+  }
+  def statistic = Action {
+    Ok(views.html.statistic())
+  }
+  def reports = Action {
+    Ok(views.html.reports())
+  }
+  def about = Action {
+    Ok(views.html.about())
+  }
+
 
   def getCars(count: Int, skip: Int, after: Long) = Action.async {
 
