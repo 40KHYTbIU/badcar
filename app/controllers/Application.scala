@@ -44,6 +44,10 @@ object Application extends Controller with MongoController {
     Ok(views.html.index())
   }
 
+  def angular = Action {
+    Ok(views.html.angular())
+  }
+
   def realtime = Action {
     Ok(views.html.realtime())
   }

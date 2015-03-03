@@ -1,5 +1,6 @@
 package services
 
+import java.lang.Exception
 import java.util.Date
 
 import akka.actor.{Props, Actor, ActorLogging}
@@ -31,6 +32,8 @@ class HttpActor extends Actor with ActorLogging {
   val mapUrl = "https://maps.googleapis.com/maps/api/geocode/json?key=AIzaSyDhVNg3fi2qfu3JrW-XBjRVmkv6PiDw8jg&components=country:RU|administrative_area_level_2:g.+Krasnodar&bound=" +
     SW_LAT + "," + SW_LNG + "|" + NE_LAT + "," + NE_LNG + "&address=Krasnodar+"
 
+  //ll=38.990383%2C45.036185&spn=0.402374%2C0.192796
+  val mapUrlYandex = "http://geocode-maps.yandex.ru/1.x/?ll=38.990383%2C45.036185&spn=0.402374%2C0.192796&format=json&results=1&geocode=Краснодар,+"
   def read(url: String): String = io.Source.fromURL(url, "UTF-8").mkString.replaceAll("\n", "")
 
   def toJson = Json.parse(read(URL))
@@ -64,6 +67,29 @@ class HttpActor extends Actor with ActorLogging {
     }
   }
 
+  def getLocationRedisYandex(addr: String): Location = Cache.getOrElse[Location](addr) {
+    val url = mapUrlYandex + addr.replaceAll("\\s+", "+") //Without transliteration
+    val jsonResult = Json.parse(read(url))
+    logger.debug("Geo result: " + jsonResult)
+    try {
+      val locations = (jsonResult \ "response" \ "GeoObjectCollection" \ "featureMember" \ "GeoObject" \ "Point" \ "pos").toString().split("\\s")
+
+      val loc = Location(locations(1).toDouble, locations(0).toDouble)
+      val Location(lat, lng) = loc
+      if (lat >= SW_LAT && lat <= NE_LAT
+        && lng >= SW_LNG && lng <= NE_LNG) {
+        Cache.set(addr, loc)
+        return loc
+      }
+      else
+        logger.debug("Error GEO for " + addr + " : " + loc)
+    }
+    catch {
+      case _: Throwable => logger.error("ERROR LOCATION:" + jsonResult)
+    }
+    badGeo
+  }
+
   def receive = {
     case "get" => {
       var page = 1
@@ -74,7 +100,7 @@ class HttpActor extends Actor with ActorLogging {
         //First time get pagecount
         if (1 == page) pageCount = (result \ "page_count").as[Int]
         val badCars = (result \ "items").as[Seq[BadCar]]
-        mongoActor ! badCars.map(x => if (x.fromplace.toLowerCase.equals("н/у")) x.copy(fromplace = "") else x.copy(location = Some(getLocationRedis(x.fromplace)))).toArray
+        mongoActor ! badCars.map(x => if (x.fromplace.toLowerCase.equals("н/у")) x.copy(fromplace = "") else x.copy(location = Some(getLocationRedisYandex(x.fromplace)))).toArray
         logger.debug("Result is: " + badCars)
         page += 1
       } while (page <= pageCount)

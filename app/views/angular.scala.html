@@ -1,15 +1,36 @@
-@main("Krasnodar evacuation") {
-    <div id="content">
-        <div id="map-canvas"></div>
-        <div ng-app="BadCarApp">
-            <div class="view-container" ng-controller="CarCtrl">
-                <button type="button" class="hideBtn" ng-click="hideGrid = !hideGrid">
+<!doctype html>
+
+<html lang="en">
+    <head>
+        <title>Angular</title>
+        <link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/main.css")">
+        <link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/bootstrap.min.css")">
+        <link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/ui-grid.min.css")">
+        <link rel="shortcut icon" type="image/png" href="@routes.Assets.at("images/favicon.ico")">
+        <script src="@routes.Assets.at("javascripts/jquery-1.11.2.min.js")" type="text/javascript"></script>
+        <script src="@routes.Assets.at("javascripts/angular.min.js")" type="text/javascript"></script>
+        <script src="@routes.Assets.at("javascripts/angular-animate.min.js")" type="text/javascript"></script>
+        <script src="@routes.Assets.at("javascripts/ui-grid.min.js")" type="text/javascript"></script>
+        <script src="@routes.Assets.at("javascripts/ui-utils.min.js")" type="text/javascript"></script>
+        <script src="@routes.Assets.at("javascripts/ui-map.js")" type="text/javascript"></script>
+        <script src="https://maps.googleapis.com/maps/api/js?v=3.exp"></script>
+        <script src="@routes.Assets.at("javascripts/bootstrap.min.js")" type="text/javascript"></script>
+        <script src="@routes.Assets.at("javascripts/myAngular.js")" type="text/javascript"></script>
+    </head>
+    @*TODO: Redesign!*@
+    <body>
+        <div id="content">
+            <div id="map-canvas"></div>
+            <div ng-app="BadCarApp">
+                <div class="view-container" ng-controller="CarCtrl">
+                    <button type="button" class="hideBtn" ng-click="hideGrid = !hideGrid">
                     {{ hideGrid && 'Show' || 'Hide' }} Details
-                </button>
-                <div class="well" ng-hide="hideGrid">
-                    <div ui-grid="gridOptions" class="grid" ui-grid-infinite-scroll ui-grid-cellnav></div>
+                    </button>
+                    <div class="well" ng-hide="hideGrid">
+                        <div ui-grid="gridOptions" class="grid" ui-grid-infinite-scroll ui-grid-cellnav></div>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
-}
+    </body>
+</html>

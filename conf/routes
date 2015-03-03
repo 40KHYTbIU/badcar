@@ -3,7 +3,7 @@
 # ~~~~
 
 # Home page
-#GET        /                    controllers.Application.index
+GET        /angular             controllers.Application.angular
 
 GET        /                    controllers.Application.realtime
 GET        /statistic           controllers.Application.statistic
