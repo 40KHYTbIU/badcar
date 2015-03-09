@@ -40,7 +40,15 @@ class HttpActor extends Actor with ActorLogging {
 
   def pageToJson(page: Int) = Json.parse(read(URL + "&page=" + page))
 
-  def getLocationRedis(addr: String): Location = {
+  def getLocation(addr: String): Location = Cache.getOrElse[Location](addr) {
+    getLocationRedisYandex(addr) match {
+      case Location(0D, 0D) => badGeo
+      case loc: Location => Cache.set(addr, loc)
+        loc
+    }
+  }
+
+  def getLocationRedisGoogle(addr: String): Location = {
     //Redis-cache
     Cache.getOrElse[Location](addr) {
       val transAddr = Transliterator.translit(addr.replaceAll("\\s+", "+"))
@@ -59,7 +67,7 @@ class HttpActor extends Actor with ActorLogging {
           return loc
         }
         else
-          logger.error("Error GEO for " + transAddr + " : " + loc)
+          logger.debug("Error GEO for " + transAddr + " : " + loc)
       }
       else
         logger.debug("ERROR LOCATION:" + jsonResult)
@@ -67,18 +75,18 @@ class HttpActor extends Actor with ActorLogging {
     }
   }
 
-  def getLocationRedisYandex(addr: String): Location = Cache.getOrElse[Location](addr) {
+  def getLocationRedisYandex(addr: String): Location = {
     val url = mapUrlYandex + addr.replaceAll("\\s+", "+") //Without transliteration
     val jsonResult = Json.parse(read(url))
     logger.debug("Geo result: " + jsonResult)
     try {
-      val locations = (jsonResult \ "response" \ "GeoObjectCollection" \ "featureMember" \ "GeoObject" \ "Point" \ "pos").toString().split("\\s")
-
+      val position = jsonResult \\ "pos"
+      val locations = position(0).as[String].split("\\s")
+      logger.debug("Location: "+ locations.toList)
       val loc = Location(locations(1).toDouble, locations(0).toDouble)
       val Location(lat, lng) = loc
       if (lat >= SW_LAT && lat <= NE_LAT
         && lng >= SW_LNG && lng <= NE_LNG) {
-        Cache.set(addr, loc)
         return loc
       }
       else
@@ -100,7 +108,7 @@ class HttpActor extends Actor with ActorLogging {
         //First time get pagecount
         if (1 == page) pageCount = (result \ "page_count").as[Int]
         val badCars = (result \ "items").as[Seq[BadCar]]
-        mongoActor ! badCars.map(x => if (x.fromplace.toLowerCase.equals("н/у")) x.copy(fromplace = "") else x.copy(location = Some(getLocationRedisYandex(x.fromplace)))).toArray
+        mongoActor ! badCars.map(x => if (x.fromplace.toLowerCase.equals("н/у")) x.copy(fromplace = "") else x.copy(location = Some(getLocation(x.fromplace)))).toArray
         logger.debug("Result is: " + badCars)
         page += 1
       } while (page <= pageCount)
