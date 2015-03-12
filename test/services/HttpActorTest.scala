@@ -31,7 +31,7 @@ class HttpActorTest extends Specification with NoTimeConversions{
 
   val testAddress = "test Street"
   "HttpActor" should {
-    "getLocation" in new AkkaTestkitSpecs2Support {
+    "return correct location" in new AkkaTestkitSpecs2Support {
       val actorRef = TestActorRef[HttpActorChild]
       val testAct = actorRef.underlyingActor
       testAct.getLocationRedisYandex(testAddress) mustEqual Location(45.012714, 39.051885)

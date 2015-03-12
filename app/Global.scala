@@ -11,7 +11,6 @@ object Global extends GlobalSettings {
     Logger.info("Application has started")
     val httpActor = Akka.system.actorOf(Props[HttpActor], name = "httpActor")
     Akka.system.scheduler.schedule(0 seconds, 15 minutes, httpActor, "get")
-//    Akka.system.scheduler.scheduleOnce(1 minute, httpActor, "get")
   }
 
   override def onStop(app: Application) {

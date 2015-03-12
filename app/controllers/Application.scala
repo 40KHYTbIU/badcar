@@ -40,14 +40,6 @@ object Application extends Controller with MongoController {
     Future(Ok("Updating..."))
   }
 
-  def index = Action {
-    Ok(views.html.index())
-  }
-
-  def angular = Action {
-    Ok(views.html.angular())
-  }
-
   def realtime = Action {
     Ok(views.html.realtime())
   }
@@ -59,33 +51,6 @@ object Application extends Controller with MongoController {
   }
   def about = Action {
     Ok(views.html.about())
-  }
-
-
-  def getCars(count: Int, skip: Int, after: Long) = Action.async {
-
-    //Get records
-    val filter = if (after == 0) Json.obj() else Json.obj("timestamp" -> Json.obj("$gt" -> after))
-    logger.debug("Get cars request count:" + count + " skip:" + skip + " after:" + after)
-
-    // let's do our query
-    val cursor: Cursor[BadCar] = collection.
-      find(filter).
-      sort(Json.obj("timestamp" -> -1)).
-      options(QueryOpts(skip)).
-      cursor[BadCar]
-
-    // gather all the JsObjects in a list
-    val futureUsersList: Future[List[BadCar]] = cursor.collect[List](count)
-    logger.debug("Gets cars from mongo")
-    // everything's ok! Let's reply with the array
-    futureUsersList.map { cars =>
-      Ok(Json.toJson(cars))
-    }.recover {
-      case e =>
-        e.printStackTrace()
-        BadRequest(e.getMessage)
-    }
   }
 
   def getActiveCars = Action.async {
