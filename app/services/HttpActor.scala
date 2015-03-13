@@ -44,10 +44,10 @@ class HttpActor extends Actor with ActorLogging {
 
   def getOnePageJson(page: Int) = getJsonByUrl(URL + "&page=" + page)
 
-  def getLocation(addr: String): Location = Cache.getOrElse[Location](addr.hashCode.toString) {
+  def getLocation(addr: String): Location = Cache.getOrElse[Location](addr) {
     getLocationRedisYandex(addr) match {
       case Location(0D, 0D) => BadGeo
-      case loc: Location => Cache.set(addr.hashCode.toString, loc)
+      case loc: Location => Cache.set(addr, loc)
         loc
     }
   }
