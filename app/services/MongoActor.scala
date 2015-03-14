@@ -16,7 +16,11 @@ class MongoActor extends Actor with ActorLogging {
     ReactiveMongoPlugin.db.collection[JSONCollection]("badcars")
 
   override def receive: Receive = {
-    //Запрос списка форумов для поиска
+    case car: BadCar => {
+      logger.debug("Got car for reinsert")
+      collection.remove(Json.obj("id" -> car.id))
+      collection.save(car)
+    }
     case cars: Array[BadCar] => {
       logger.debug("Got cars list for insert")
       cars.foreach(x => {

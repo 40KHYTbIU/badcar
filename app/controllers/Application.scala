@@ -72,20 +72,20 @@ object Application extends Controller with MongoController {
     }
   }
 
-//  def updateLocations = Action.async {
-//    val filter = Json.obj("location" -> Json.obj("$exists" -> false))
-//    val cursor: Cursor[BadCar] = collection.find(filter).cursor[BadCar]
-//    val futureUsersList: Future[List[BadCar]] = cursor.collect[List]()
-//    implicit val timeout = Timeout(5 seconds)
-//    futureUsersList.map { cars =>
-//      logger.debug("Got cars without location: " + cars.length)
-//      mongoActor ! cars.map(x => x.copy(location = Await.result(geoActor ? Address(x.fromplace), timeout.duration).asInstanceOf[Some[Location]])).toArray
-//      Ok("Updated " + cars.length + " cars")
-//    }.recover {
-//      case e =>
-//        e.printStackTrace()
-//        BadRequest(e.getMessage)
-//    }
-//  }
+  def updateLocations(count: String) = Action.async {
+    val filter = Json.obj("location" -> Json.obj("$exists" -> false))
+    val cursor: Cursor[BadCar] = collection.find(filter).cursor[BadCar]
+    val futureUsersList: Future[List[BadCar]] = cursor.collect[List](count.toInt)
+    implicit val timeout = Timeout(5 seconds)
+    futureUsersList.map { cars =>
+      logger.debug("Got cars without location: " + cars.length)
+      cars.map(x => mongoActor ! x.copy(location = Await.result(geoActor ? Address(x.fromplace), timeout.duration).asInstanceOf[Some[Location]]))
+      Ok("Updated " + cars.length + " cars")
+    }.recover {
+      case e =>
+        e.printStackTrace()
+        BadRequest(e.getMessage)
+    }
+  }
 
 }
