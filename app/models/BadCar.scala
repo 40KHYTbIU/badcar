@@ -20,6 +20,8 @@ case class Location(lat: Double, lng: Double)
 
 case class BadCar(id: Int, active: Boolean, number: String, date: String, timestamp: Option[Long], fromplace: String, location:Option[Location], mark: Option[Mark], evacuator: Option[Evacuator], organization: Option[Organization], parking: Option[Parking])
 
+case class Address(address: String)
+
 object Mark {
 
   implicit val markReads: Reads[Mark] = (

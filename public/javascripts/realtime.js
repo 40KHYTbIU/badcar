@@ -7,19 +7,40 @@ function makeInfoContent(carEntity) {
         '</div>'
 }
 
+var $totalCars = $('#totalCars');
+function showCount(count) {
+    $totalCars.html('<h5>Count: ' + count + '</h5>').show();
+}
+var colors = {
+    hour: '#F5003D',
+    day: '#CC0033',
+    week: '#8E4848',
+    longtime: '#616161'
+};
+
 function getActiveCars(map) {
-    var markerPreset = { preset: 'islands#icon', iconColor: '#a5260a' };
     
     $.ajax({
         url: "/getActive"
     }).done(function (data) {
+        var time = new Date().getTime();
         map.geoObjects.removeAll(); //Clean all
-        for (var i = data.length - 1; i >= 0; i--)
-            if (data[i].hasOwnProperty("location") && data[i].location != null) {                
-                var marker = new ymaps.Placemark([data[i].location.lat, data[i].location.lng], 
-                    { balloonContent: makeInfoContent(data[i]) }, markerPreset);
-                map.geoObjects.add(marker);                
+        var count = 0;
+        for (var i = 0 ; i < data.length - 1; i++)
+            if (data[i].hasOwnProperty("location") && data[i].location != null) {
+                var markerColor;
+                var timeDelta = (time - data[i].timestamp)/1000;
+                if (timeDelta < 2*60*60) markerColor = colors.hour;
+                else if (timeDelta < 80*60*60) markerColor = colors.day;
+                else if (timeDelta < 7*80*60*60) markerColor = colors.week;
+                else markerColor = colors.longtime;
+
+                var marker = new ymaps.Placemark([data[i].location.lat, data[i].location.lng],
+                    { balloonContent: makeInfoContent(data[i]) }, { preset: 'islands#icon', iconColor: markerColor });
+                map.geoObjects.add(marker);
+                count++;
             }
+        showCount(count);
     });
 
 }
