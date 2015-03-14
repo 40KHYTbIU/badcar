@@ -13,14 +13,9 @@ import play.api.Play.current
 class MongoActor extends Actor with ActorLogging {
   val logger = LoggerFactory.getLogger(this.getClass)
   val collection: JSONCollection =
-    ReactiveMongoPlugin.db.collection[JSONCollection]("badcars")
+    ReactiveMongoPlugin.db.collection[JSONCollection]("evacars")
 
   override def receive: Receive = {
-    case car: BadCar => {
-      logger.debug("Got car for reinsert")
-      collection.remove(Json.obj("id" -> car.id))
-      collection.save(car)
-    }
     case cars: Array[BadCar] => {
       logger.debug("Got cars list for insert")
       cars.foreach(x => {
