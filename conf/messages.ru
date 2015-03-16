@@ -4,6 +4,6 @@ nav.realtime=Карта Онлайн
 nav.statistic=Статистика
 nav.reports=Отчетность
 nav.about=О проекте
-nav.alarm=Уведомить
+nav.notify=Уведомить
 
 about.content=Наш проект носит информативный характер.

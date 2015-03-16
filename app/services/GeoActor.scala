@@ -66,7 +66,7 @@ class GeoActor extends Actor with ActorLogging {
   def receive = {
     case Address(addr) => sender ! Some(getLocation(addr))
    
-    case "Shutdown" =>
+    case Shutdown =>
       logger.debug("Geo actor shutdowns")
       context.stop(self)
       context.system.shutdown()

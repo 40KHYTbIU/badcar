@@ -17,10 +17,42 @@
                 <li><a href="@controllers.routes.Application.realtime()">@Messages("nav.realtime")</a></li>
                 @*<li><a href="@controllers.routes.Application.statistic()">@Messages("nav.statistic")</a></li>*@
                 @*<li><a href="@controllers.routes.Application.reports()">@Messages("nav.reports")</a></li>*@
-                @*<li><a href="#">@Messages("nav.alarm")</a></li>*@
+                <li><a href="#" data-toggle="modal" data-target="#notifyModal">@Messages("nav.notify")</a></li>
                 <li><a href="@controllers.routes.Application.about()">@Messages("nav.about")</a></li>
             </ul>
         </div> <!-- /.navbar-collapse -->
     </div> <!-- /.container-fluid -->
+
+    <div class="modal fade" id="notifyModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="exampleModalLabel">Subscribe</h4>
+                </div>
+                <div class="modal-body">
+                    <form>
+                        <div class="form-group">
+                            <label for="user-name" class="control-label">Name:</label>
+                            <input type="text" class="form-control" id="user-name">
+                        </div>
+                        <div class="form-group">
+                            <label for="car-number" class="control-label">Number:</label>
+                            <input type="text" class="form-control" id="car-number">
+                        </div>
+                        <div class="form-group">
+                            <label for="user-email" class="control-label">Email:</label>
+                            <input type="text" class="form-control" id="user-email">
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    <button id="subscribe" type="button" class="btn btn-primary">Subscribe</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
 </nav>
 

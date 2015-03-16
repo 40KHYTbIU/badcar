@@ -7,6 +7,7 @@ import play.api.mvc._
 import play.api.libs.json._
 import play.api.libs.concurrent.Execution.Implicits.defaultContext
 import play.modules.reactivemongo.{MongoController, ReactiveMongoPlugin}
+import reactivemongo.api.indexes.{IndexType, Index}
 import scala.concurrent.{Await, Future}
 import play.libs.Akka
 import models._
@@ -20,6 +21,8 @@ import play.modules.reactivemongo.json.collection.JSONCollection
 object Application extends Controller with MongoController {
   val logger = LoggerFactory.getLogger(this.getClass)
   val collection: JSONCollection = db.collection[JSONCollection]("evacars")
+
+  collection.indexesManager.ensure(Index(List("id" -> IndexType.Ascending), unique = true))
 
   lazy val geoActor = Akka.system.actorSelection("/user/geoActor")
   lazy val mongoActor = Akka.system.actorSelection("/user/mongoActor")
@@ -53,6 +56,7 @@ object Application extends Controller with MongoController {
 
   def getActiveCars = Action.async {
     val filter = Json.obj("active" -> true)
+    //TODO: Return less info
     val cursor: Cursor[BadCar] = collection.find(filter).cursor[BadCar]
     val futureUsersList: Future[List[BadCar]] = cursor.collect[List]()
     logger.debug("Gets active cars from mongo")

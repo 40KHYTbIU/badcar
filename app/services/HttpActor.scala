@@ -55,9 +55,9 @@ class HttpActor extends Actor with ActorLogging {
   }
 
   def receive = {
-    case "get" => mongoActor ! "dropStatus"
+    case "get" => mongoActor ! DropStatus
       getManage(1, 1)
-    case "Shutdown" =>
+    case Shutdown =>
       logger.debug("Http actor shutdowns")
       context.stop(self)
       context.system.shutdown()
