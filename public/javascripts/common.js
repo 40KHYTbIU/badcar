@@ -1,6 +1,7 @@
 /**
  * Created by Mike on 17/03/15.
  */
+var notifyModal;
 
 function subscribe() {
     var $username = $('#user-name');
@@ -16,7 +17,10 @@ function subscribe() {
             data: oData,
             processData: false,
             contentType: "application/json",
-            success: function (data) { alert("Success: " + data); },
+            success: function (data) {
+                if (data == "Ok") notifyModal.modal('hide');
+                else alert("Error: " + data);
+            },
             error:   function (data) { alert("Error: " + data);   }
         });
     } else
@@ -25,6 +29,7 @@ function subscribe() {
 
 
 $(document).ready(function () {
-   var $subscribe = $('#subscribe');
-   $subscribe.click(function(){subscribe()});
+    notifyModal = $('#notifyModal');
+    var $subscribe = $('#subscribe');
+    $subscribe.click(function () { subscribe() });
 });

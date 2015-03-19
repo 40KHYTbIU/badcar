@@ -25,17 +25,17 @@ object Notification extends Controller  {
     implicit val timeout = Timeout(5 seconds)
     //TODO: validate input
     val subscriptionRequest = request.body
-    val requestNotify = subscriptionRequest.as[NotifyRequest]
+    val nr = subscriptionRequest.as[NotifyRequest]
 
     logger.debug("Got notify request: " + NotifyRequest)
     try {
-      val result = Await.result(mongoActor ? Subscription("vasy", "test", "test@test.ru", false, ""), timeout.duration).asInstanceOf[String]
+      val result = Await.result(mongoActor ? Subscription(nr.username, nr.number, nr.email, confirmed = false, ""), timeout.duration).asInstanceOf[String]
       Future(Ok(result))
     }
     catch {
       case e: Exception => 
         logger.error(e.getMessage)
-        Future(Ok("Bad"))
+        Future(Ok("Exception taken"))
     }
   }
 
