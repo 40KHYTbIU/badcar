@@ -17,3 +17,7 @@ object Subscription { implicit val recordFmt = Json.format[Subscription]}
 
 case class NotifyRequest(username: String, number:String, email:String)
 object NotifyRequest { implicit val recordFmt = Json.format[NotifyRequest]}
+
+case class CarNotification(car:BadCar, email: String)
+case class Notified(id: Int)
+

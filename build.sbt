@@ -13,7 +13,8 @@ libraryDependencies ++= Seq(
   "com.typesafe.akka" %% "akka-actor" % "2.2.1",
   "com.typesafe.akka" %% "akka-testkit" % "2.2.1",
   "org.reactivemongo" %% "play2-reactivemongo" % "0.10.5.0.akka22",
-  "com.typesafe.play" %% "play-cache" % "2.2.6"
+  "com.typesafe.play" %% "play-cache" % "2.2.6",
+  "org.apache.commons" % "commons-email" % "1.3.3"
 )
 
 playScalaSettings

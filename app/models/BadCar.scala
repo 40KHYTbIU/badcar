@@ -18,7 +18,7 @@ case class Parking(id: Int, title: String)
 
 case class Location(lat: Double, lng: Double)
 
-case class BadCar(id: Int, active: Boolean, number: String, date: String, timestamp: Option[Long], fromplace: String, location:Option[Location], mark: Option[Mark], evacuator: Option[Evacuator], organization: Option[Organization], parking: Option[Parking])
+case class BadCar(id: Int, active: Boolean, number: String, date: String, timestamp: Option[Long], fromplace: String, location:Option[Location], mark: Option[Mark], evacuator: Option[Evacuator], organization: Option[Organization], parking: Option[Parking], notified: Option[Boolean])
 
 case class Address(address: String)
 
@@ -106,7 +106,8 @@ object BadCar {
       (JsPath \ "mark").readNullable[Mark] and
       (JsPath \ "evacuator").readNullable[Evacuator] and
       (JsPath \ "organization").readNullable[Organization] and
-      (JsPath \ "parking").readNullable[Parking]
+      (JsPath \ "parking").readNullable[Parking] and
+      (JsPath \ "notified").readNullable[Boolean]
     )(BadCar.apply _)
 
   implicit val badCarWrites = new Writes[BadCar] {
@@ -122,7 +123,8 @@ object BadCar {
         "mark" -> t.mark,
         "evacuator" -> t.evacuator,
         "organization" -> t.organization,
-        "parking" -> t.parking
+        "parking" -> t.parking,
+      "notified" -> t.notified
       )
     }
   }
